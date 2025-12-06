@@ -1,7 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,6 +21,9 @@ def create_app(config_name=None):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///dev.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
+    # Admin password for simple auth (MVP)
+    app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'lunch-admin-2024')
+    
     # Fix for Render's postgres:// vs postgresql://
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace(
@@ -33,9 +36,16 @@ def create_app(config_name=None):
     
     # Register blueprints
     from app.routes.main import main_bp
+    from app.routes.admin import admin_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_bp)
     
     # Import models so they're known to Flask-Migrate
     from app import models
+    
+    # Auto-run migrations in production
+    if os.environ.get('RENDER'):
+        with app.app_context():
+            upgrade()
     
     return app

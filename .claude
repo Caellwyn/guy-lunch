@@ -3,6 +3,7 @@
 ## Project Overview
 Web application automating weekly lunch coordination for a 25-member business networking group.
 See `Tuesday_Lunch_Scheduler_Project_Plan.md` for full requirements and phases.
+See `technical_guide.md` for current app architecture
 
 ---
 

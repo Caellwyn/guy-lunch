@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Track Attendance - Tuesday Lunch{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="text-blue-600 hover:underline text-sm">← Dashboard</a>
+            <h1 class="text-2xl font-bold text-gray-900 mt-1">✅ Track Attendance</h1>
+            <p class="text-gray-600">{{ lunch.date.strftime('%A, %B %d, %Y') }}</p>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" action="{{ url_for('admin.attendance', date=lunch.date.isoformat()) }}" id="attendance-form">
+        <!-- Host Selection -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <label class="block text-sm font-semibold text-blue-900 mb-2">
+                👑 Who is hosting today?
+            </label>
+            <select name="host_id" 
+                    class="w-full px-4 py-3 border border-blue-300 rounded-lg text-lg bg-white focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Select Host --</option>
+                {% for member in members %}
+                    {% if member.member_type == 'regular' %}
+                        <option value="{{ member.id }}" 
+                                {% if next_host and member.id == next_host.id %}selected{% endif %}
+                                {% if lunch.host_id == member.id %}selected{% endif %}>
+                            {{ member.name }}
+                            {% if next_host and member.id == next_host.id %}(suggested){% endif %}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Attendance Checklist -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-4 border-b bg-gray-50">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-semibold text-gray-900">Who attended?</h2>
+                    <span id="count" class="text-sm text-gray-500">0 selected</span>
+                </div>
+            </div>
+            
+            <div class="divide-y max-h-[50vh] overflow-y-auto">
+                {% for member in members %}
+                    <label class="flex items-center p-4 hover:bg-gray-50 cursor-pointer min-h-[56px]">
+                        <input type="checkbox" 
+                               name="attendees" 
+                               value="{{ member.id }}"
+                               {% if member.id in existing_attendance %}checked{% endif %}
+                               class="w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500 attendance-checkbox">
+                        <div class="ml-4 flex-1">
+                            <span class="font-medium text-gray-900">{{ member.name }}</span>
+                            {% if member.member_type == 'guest' %}
+                                <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Guest</span>
+                            {% endif %}
+                        </div>
+                        <span class="text-sm text-gray-500">
+                            {{ member.attendance_since_hosting }} since hosting
+                        </span>
+                    </label>
+                {% else %}
+                    <p class="p-4 text-gray-500 italic">No members found. Add members first.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Add Guest Quick Form -->
+        <div class="bg-gray-50 rounded-lg p-4 mt-4">
+            <h3 class="font-semibold text-gray-900 mb-3">➕ Add a Guest</h3>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" 
+                       id="guest-name" 
+                       placeholder="Guest name"
+                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-lg">
+                <input type="email" 
+                       id="guest-email" 
+                       placeholder="Email (optional)"
+                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-lg">
+                <button type="button" 
+                        onclick="addGuest()"
+                        class="bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 whitespace-nowrap">
+                    Add Guest
+                </button>
+            </div>
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="mt-6 sticky bottom-4">
+            <button type="submit" 
+                    class="w-full bg-green-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 shadow-lg">
+                💾 Save Attendance
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Update count display
+function updateCount() {
+    const checkboxes = document.querySelectorAll('.attendance-checkbox:checked');
+    document.getElementById('count').textContent = checkboxes.length + ' selected';
+}
+
+// Attach listeners
+document.querySelectorAll('.attendance-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateCount);
+});
+updateCount();
+
+// Add guest function
+async function addGuest() {
+    const name = document.getElementById('guest-name').value.trim();
+    const email = document.getElementById('guest-email').value.trim();
+    
+    if (!name) {
+        alert('Please enter a guest name');
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("admin.add_guest") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&lunch_date={{ lunch.date.isoformat() }}`
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Add new checkbox to the list
+            const container = document.querySelector('.divide-y');
+            const newItem = document.createElement('label');
+            newItem.className = 'flex items-center p-4 hover:bg-gray-50 cursor-pointer min-h-[56px]';
+            newItem.innerHTML = `
+                <input type="checkbox" 
+                       name="attendees" 
+                       value="${data.id}"
+                       checked
+                       class="w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500 attendance-checkbox">
+                <div class="ml-4 flex-1">
+                    <span class="font-medium text-gray-900">${data.name}</span>
+                    <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">Guest</span>
+                </div>
+                <span class="text-sm text-gray-500">0 since hosting</span>
+            `;
+            container.appendChild(newItem);
+            
+            // Add listener and update count
+            newItem.querySelector('input').addEventListener('change', updateCount);
+            updateCount();
+            
+            // Clear inputs
+            document.getElementById('guest-name').value = '';
+            document.getElementById('guest-email').value = '';
+        } else {
+            alert(data.error || 'Failed to add guest');
+        }
+    } catch (error) {
+        alert('Error adding guest: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

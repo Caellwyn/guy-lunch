@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Members - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="text-blue-600 hover:underline text-sm">← Dashboard</a>
+            <h1 class="text-2xl font-bold text-gray-900 mt-1">👥 Members</h1>
+        </div>
+        <a href="{{ url_for('admin.add_member') }}" 
+           class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 text-center">
+            ➕ Add Member
+        </a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Member List -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="divide-y">
+            {% set current_type = namespace(value='') %}
+            {% for member in members %}
+                {% if member.member_type != current_type.value %}
+                    {% set current_type.value = member.member_type %}
+                    <div class="bg-gray-100 px-4 py-2 font-semibold text-gray-700 uppercase text-sm">
+                        {% if member.member_type == 'regular' %}👤 Regular Members
+                        {% elif member.member_type == 'guest' %}🎫 Guests
+                        {% else %}🚫 Inactive
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <a href="{{ url_for('admin.edit_member', member_id=member.id) }}" 
+                   class="flex items-center justify-between p-4 hover:bg-gray-50">
+                    <div>
+                        <span class="font-medium text-gray-900">{{ member.name }}</span>
+                        {% if member.email %}
+                            <span class="text-sm text-gray-500 ml-2">{{ member.email }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-right text-sm">
+                        <div class="text-gray-600">{{ member.attendance_since_hosting }} since hosting</div>
+                        {% if member.last_hosted_date %}
+                            <div class="text-gray-400 text-xs">Last hosted: {{ member.last_hosted_date.strftime('%b %d, %Y') }}</div>
+                        {% endif %}
+                    </div>
+                </a>
+            {% else %}
+                <p class="p-6 text-gray-500 italic text-center">No members yet. Add your first member!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

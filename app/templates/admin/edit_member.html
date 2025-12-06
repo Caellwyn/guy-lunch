@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ member.name }} - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-lg mx-auto">
+    <!-- Header -->
+    <div>
+        <a href="{{ url_for('admin.members') }}" class="text-blue-600 hover:underline text-sm">← Back to Members</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-1">✏️ Edit Member</h1>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   id="name" 
+                   name="name" 
+                   required
+                   value="{{ member.name }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+        </div>
+        
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                Email
+            </label>
+            <input type="email" 
+                   id="email" 
+                   name="email"
+                   value="{{ member.email or '' }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+        </div>
+        
+        <div>
+            <label for="member_type" class="block text-sm font-medium text-gray-700 mb-2">
+                Member Type
+            </label>
+            <select id="member_type" 
+                    name="member_type"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+                <option value="regular" {% if member.member_type == 'regular' %}selected{% endif %}>Regular Member</option>
+                <option value="guest" {% if member.member_type == 'guest' %}selected{% endif %}>Guest</option>
+                <option value="inactive" {% if member.member_type == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="attendance_since_hosting" class="block text-sm font-medium text-gray-700 mb-2">
+                Attendance Since Last Hosting
+            </label>
+            <input type="number" 
+                   id="attendance_since_hosting" 
+                   name="attendance_since_hosting"
+                   min="0"
+                   value="{{ member.attendance_since_hosting or 0 }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+            <p class="text-sm text-gray-500 mt-1">Adjust this to correct hosting queue position</p>
+        </div>
+        
+        <!-- Stats (read-only) -->
+        <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+            <h3 class="font-semibold text-gray-700">Stats</h3>
+            <div class="text-sm text-gray-600">
+                <p>Total times hosted: {{ member.total_hosting_count or 0 }}</p>
+                {% if member.last_hosted_date %}
+                    <p>Last hosted: {{ member.last_hosted_date.strftime('%B %d, %Y') }}</p>
+                {% endif %}
+                {% if member.first_attended %}
+                    <p>First attended: {{ member.first_attended.strftime('%B %d, %Y') }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <button type="submit" 
+                class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 text-lg">
+            Save Changes
+        </button>
+    </form>
+</div>
+{% endblock %}

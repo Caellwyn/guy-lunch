@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">📋 Secretary Dashboard</h1>
+            <p class="text-gray-600">Manage Tuesday lunch attendance and hosting</p>
+        </div>
+        <a href="{{ url_for('admin.logout') }}" 
+           class="text-sm text-gray-500 hover:text-gray-700">
+            Logout →
+        </a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <a href="{{ url_for('admin.attendance', date=next_tuesday.isoformat()) }}" 
+           class="bg-blue-600 text-white rounded-lg p-6 text-center hover:bg-blue-700 transition-colors">
+            <div class="text-3xl mb-2">✅</div>
+            <div class="text-lg font-semibold">Track Attendance</div>
+            <div class="text-blue-200 text-sm">{{ next_tuesday.strftime('%B %d, %Y') }}</div>
+        </a>
+        
+        <a href="{{ url_for('admin.members') }}" 
+           class="bg-gray-100 text-gray-800 rounded-lg p-6 text-center hover:bg-gray-200 transition-colors">
+            <div class="text-3xl mb-2">👥</div>
+            <div class="text-lg font-semibold">Manage Members</div>
+            <div class="text-gray-500 text-sm">{{ total_members }} members, {{ total_guests }} guests</div>
+        </a>
+    </div>
+    
+    <!-- Current Week Status -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">📅 This Week's Lunch</h2>
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Date:</span>
+                <span class="font-medium">{{ next_tuesday.strftime('%A, %B %d') }}</span>
+            </div>
+            {% if current_lunch %}
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="px-2 py-1 rounded text-sm 
+                        {% if current_lunch.status == 'completed' %}bg-green-100 text-green-800
+                        {% elif current_lunch.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ current_lunch.status|title }}
+                    </span>
+                </div>
+                {% if current_lunch.location %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Location:</span>
+                        <span class="font-medium">{{ current_lunch.location.name }}</span>
+                    </div>
+                {% endif %}
+                {% if current_lunch.host %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Host:</span>
+                        <span class="font-medium">{{ current_lunch.host.name }}</span>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-gray-500 italic">No lunch scheduled yet</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Hosting Queue -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">🎯 Hosting Queue</h2>
+            <a href="{{ url_for('admin.hosting_queue') }}" class="text-blue-600 text-sm hover:underline">View all →</a>
+        </div>
+        <div class="space-y-3">
+            {% for member in hosting_queue %}
+                <div class="flex justify-between items-center py-2 {% if loop.first %}border-l-4 border-blue-500 pl-3 bg-blue-50 -mx-2 px-4 rounded{% endif %}">
+                    <div>
+                        <span class="font-medium {% if loop.first %}text-blue-700{% endif %}">
+                            {% if loop.first %}👑 {% endif %}{{ member.name }}
+                        </span>
+                        {% if loop.index == 2 %}
+                            <span class="text-xs text-gray-500 ml-2">(backup)</span>
+                        {% endif %}
+                    </div>
+                    <span class="text-sm text-gray-500">
+                        {{ member.attendance_since_hosting }} lunches since hosting
+                    </span>
+                </div>
+            {% else %}
+                <p class="text-gray-500 italic">No members in queue</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Recent Lunches -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">📜 Recent Lunches</h2>
+        <div class="space-y-3">
+            {% for lunch in recent_lunches %}
+                <div class="flex justify-between items-center py-2 border-b last:border-0">
+                    <div>
+                        <span class="font-medium">{{ lunch.date.strftime('%b %d') }}</span>
+                        {% if lunch.location %}
+                            <span class="text-gray-500">@ {{ lunch.location.name }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-right text-sm">
+                        {% if lunch.host %}
+                            <span class="text-gray-600">Host: {{ lunch.host.name }}</span>
+                        {% endif %}
+                        {% if lunch.actual_attendance %}
+                            <span class="ml-2 text-gray-500">({{ lunch.actual_attendance }} attended)</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-gray-500 italic">No lunch history yet</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

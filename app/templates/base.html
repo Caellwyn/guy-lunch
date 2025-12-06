@@ -8,25 +8,29 @@
     <script src="https://cdn.tailwindcss.com"></script>
     {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen flex flex-col">
     <nav class="bg-blue-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex-shrink-0">
                     <a href="/" class="text-xl font-bold">🍽️ Tuesday Lunch</a>
                 </div>
-                <div class="hidden sm:flex sm:space-x-8">
-                    <!-- Nav links will go here -->
+                <div class="flex items-center space-x-4">
+                    {% if session.get('admin_authenticated') %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-blue-200">Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('admin.login') }}" class="hover:text-blue-200 text-sm">Admin</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
     
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
         {% block content %}{% endblock %}
     </main>
     
-    <footer class="bg-gray-800 text-gray-400 mt-auto">
+    <footer class="bg-gray-800 text-gray-400">
         <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm">
             <p>Built by <strong>The AI Guy</strong> 🤖</p>
         </div>

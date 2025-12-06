@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Add Member - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-lg mx-auto">
+    <!-- Header -->
+    <div>
+        <a href="{{ url_for('admin.members') }}" class="text-blue-600 hover:underline text-sm">← Back to Members</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-1">➕ Add Member</h1>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   id="name" 
+                   name="name" 
+                   required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                   placeholder="John Smith">
+        </div>
+        
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                Email
+            </label>
+            <input type="email" 
+                   id="email" 
+                   name="email"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                   placeholder="john@example.com">
+        </div>
+        
+        <div>
+            <label for="member_type" class="block text-sm font-medium text-gray-700 mb-2">
+                Member Type
+            </label>
+            <select id="member_type" 
+                    name="member_type"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+                <option value="regular">Regular Member</option>
+                <option value="guest">Guest</option>
+            </select>
+        </div>
+        
+        <button type="submit" 
+                class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 text-lg">
+            Add Member
+        </button>
+    </form>
+</div>
+{% endblock %}

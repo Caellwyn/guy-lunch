@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Hosting Queue - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-blue-600 hover:underline text-sm">← Dashboard</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-1">🎯 Hosting Queue</h1>
+        <p class="text-gray-600">Members sorted by lunches attended since last hosting</p>
+    </div>
+    
+    <!-- Queue -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="divide-y">
+            {% for member in members %}
+                <div class="flex items-center justify-between p-4 
+                    {% if loop.first %}bg-blue-50 border-l-4 border-blue-500{% endif %}
+                    {% if loop.index == 2 %}bg-yellow-50{% endif %}">
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl font-bold text-gray-300 w-8">{{ loop.index }}</span>
+                        <div>
+                            <span class="font-medium text-gray-900">
+                                {% if loop.first %}👑 {% endif %}
+                                {{ member.name }}
+                            </span>
+                            {% if loop.first %}
+                                <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">NEXT HOST</span>
+                            {% elif loop.index == 2 %}
+                                <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">BACKUP</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold text-lg {% if loop.first %}text-blue-600{% else %}text-gray-700{% endif %}">
+                            {{ member.attendance_since_hosting }}
+                        </div>
+                        <div class="text-xs text-gray-500">lunches since hosting</div>
+                        {% if member.last_hosted_date %}
+                            <div class="text-xs text-gray-400">
+                                Last: {{ member.last_hosted_date.strftime('%b %d, %Y') }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="p-6 text-gray-500 italic text-center">No regular members in queue</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
+        <p><strong>How the queue works:</strong></p>
+        <ul class="list-disc list-inside mt-2 space-y-1">
+            <li>Members are ranked by how many lunches they've attended since last hosting</li>
+            <li>The person who has attended the most lunches without hosting is next</li>
+            <li>When someone hosts, their counter resets to 0</li>
+            <li>Ties are broken alphabetically by name</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
