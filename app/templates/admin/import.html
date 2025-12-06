@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Import Members - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-2xl mx-auto">
+    <!-- Header -->
+    <div>
+        <a href="{{ url_for('admin.setup') }}" class="text-blue-600 hover:underline text-sm">← Back to Setup</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-1">📥 Import Members</h1>
+        <p class="text-gray-600 mt-2">Upload a CSV file to add or update members and their historical data.</p>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Download Template -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-2">Step 1: Get the Template</h2>
+        <p class="text-sm text-gray-600 mb-4">
+            Download a CSV template pre-filled with your current members (if any). 
+            Fill in the historical data columns in Excel or Google Sheets.
+        </p>
+        <a href="{{ url_for('admin.export_member_template') }}" 
+           class="inline-block bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200">
+            📄 Download CSV Template
+        </a>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-2">Step 2: Upload Your Data</h2>
+        <p class="text-sm text-gray-600 mb-4">
+            Upload your completed CSV file. Existing members (matched by email) will be updated; 
+            new emails will create new members.
+        </p>
+        
+        <form action="{{ url_for('admin.import_members') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Choose CSV File</label>
+                <input type="file" 
+                       name="csv_file" 
+                       accept=".csv"
+                       required
+                       class="block w-full text-sm text-gray-500
+                              file:mr-4 file:py-3 file:px-4
+                              file:rounded-lg file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-blue-50 file:text-blue-700
+                              hover:file:bg-blue-100
+                              cursor-pointer">
+            </div>
+            
+            <button type="submit" 
+                    class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700">
+                📤 Upload and Import
+            </button>
+        </form>
+    </div>
+
+    <!-- Format Reference -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <h3 class="font-semibold text-yellow-900 mb-2">⚠️ Important Notes</h3>
+        <ul class="text-sm text-yellow-800 space-y-2">
+            <li>• <strong>Email is the unique identifier</strong> - members are matched by email address</li>
+            <li>• <strong>Dates must be YYYY-MM-DD format</strong> - e.g., 2024-11-15</li>
+            <li>• <strong>Leave fields blank if unknown</strong> - they'll default to 0 or empty</li>
+            <li>• <strong>member_type values:</strong> regular, guest, or inactive</li>
+            <li>• <strong>You can re-import</strong> - running import again will update existing records</li>
+        </ul>
+    </div>
+
+    <!-- Example -->
+    <div class="bg-gray-50 rounded-lg p-6">
+        <h3 class="font-semibold text-gray-900 mb-2">📋 Example CSV Content</h3>
+        <pre class="text-xs bg-white p-4 rounded border overflow-x-auto">name,email,member_type,attendance_since_hosting,last_hosted_date,total_hosting_count,first_attended
+Mike Wallin,michaelwallin@hotmail.com,regular,3,2024-11-15,5,2020-01-07
+Steve Dahl,srdahl@pnwr.com,regular,0,2024-12-03,3,2021-06-15
+New Person,newperson@email.com,regular,0,,,</pre>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Initial Setup - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-2xl mx-auto">
+    <!-- Header -->
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-blue-600 hover:underline text-sm">← Dashboard</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-1">🚀 Initial Setup</h1>
+        <p class="text-gray-600 mt-2">Set up your lunch group with members and historical data.</p>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Status Overview -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">📊 Current Status</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <div class="text-3xl font-bold text-blue-600">{{ member_count }}</div>
+                <div class="text-sm text-gray-600">Members</div>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <div class="text-3xl">
+                    {% if has_historical_data %}✅{% else %}❌{% endif %}
+                </div>
+                <div class="text-sm text-gray-600">Historical Data</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Steps -->
+    <div class="bg-white rounded-lg shadow divide-y">
+        <!-- Step 1: Add Members -->
+        <div class="p-6">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full {% if member_count > 0 %}bg-green-100 text-green-600{% else %}bg-blue-100 text-blue-600{% endif %} flex items-center justify-center font-bold">
+                    {% if member_count > 0 %}✓{% else %}1{% endif %}
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900">Add Members</h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        {% if member_count > 0 %}
+                            You have {{ member_count }} members in the system.
+                        {% else %}
+                            Add your lunch group members. You can add them individually or import from CSV.
+                        {% endif %}
+                    </p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <a href="{{ url_for('admin.members') }}" 
+                           class="inline-block bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">
+                            👥 Manage Members
+                        </a>
+                        <a href="{{ url_for('admin.import_members') }}" 
+                           class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                            📥 Import from CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Historical Data -->
+        <div class="p-6">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full {% if has_historical_data %}bg-green-100 text-green-600{% else %}bg-blue-100 text-blue-600{% endif %} flex items-center justify-center font-bold">
+                    {% if has_historical_data %}✓{% else %}2{% endif %}
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900">Import Historical Data</h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        {% if has_historical_data %}
+                            Historical hosting data has been imported.
+                        {% else %}
+                            Import attendance counts, last hosted dates, and hosting history to set up the hosting queue correctly.
+                        {% endif %}
+                    </p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <a href="{{ url_for('admin.export_member_template') }}" 
+                           class="inline-block bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">
+                            📄 Download CSV Template
+                        </a>
+                        <a href="{{ url_for('admin.import_members') }}" 
+                           class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                            📥 Upload CSV Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Ready! -->
+        <div class="p-6">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full {% if member_count > 0 and has_historical_data %}bg-green-100 text-green-600{% else %}bg-gray-100 text-gray-400{% endif %} flex items-center justify-center font-bold">
+                    {% if member_count > 0 and has_historical_data %}✓{% else %}3{% endif %}
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900">Start Using the App</h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        {% if member_count > 0 and has_historical_data %}
+                            You're all set! The hosting queue is ready based on your historical data.
+                        {% else %}
+                            Once you've added members and imported historical data, you're ready to go!
+                        {% endif %}
+                    </p>
+                    {% if member_count > 0 %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('admin.dashboard') }}" 
+                           class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">
+                            🎉 Go to Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Format Info -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="font-semibold text-blue-900 mb-2">📋 CSV Format Reference</h3>
+        <p class="text-sm text-blue-800 mb-3">Your CSV should have these columns:</p>
+        <div class="overflow-x-auto">
+            <table class="text-xs text-blue-900 w-full">
+                <thead>
+                    <tr class="border-b border-blue-200">
+                        <th class="text-left py-1 pr-4">Column</th>
+                        <th class="text-left py-1 pr-4">Required</th>
+                        <th class="text-left py-1">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="font-mono">
+                    <tr><td class="py-1 pr-4">name</td><td class="pr-4">✓</td><td class="font-sans">Member's full name</td></tr>
+                    <tr><td class="py-1 pr-4">email</td><td class="pr-4">✓</td><td class="font-sans">Email (unique identifier)</td></tr>
+                    <tr><td class="py-1 pr-4">member_type</td><td class="pr-4"></td><td class="font-sans">regular, guest, or inactive</td></tr>
+                    <tr><td class="py-1 pr-4">attendance_since_hosting</td><td class="pr-4"></td><td class="font-sans">Lunches attended since last hosting</td></tr>
+                    <tr><td class="py-1 pr-4">last_hosted_date</td><td class="pr-4"></td><td class="font-sans">YYYY-MM-DD format</td></tr>
+                    <tr><td class="py-1 pr-4">total_hosting_count</td><td class="pr-4"></td><td class="font-sans">Total times hosted</td></tr>
+                    <tr><td class="py-1 pr-4">first_attended</td><td class="pr-4"></td><td class="font-sans">YYYY-MM-DD format</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
