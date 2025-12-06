@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center py-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        🍽️ Tuesday Lunch Scheduler
+    </h1>
+    <p class="text-xl text-gray-600 mb-8">
+        Automating lunch coordination for the Longview business networking group
+    </p>
+    
+    <div class="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto">
+        <h2 class="text-2xl font-semibold text-green-600 mb-2">✅ App is Running!</h2>
+        <p class="text-gray-500">
+            Phase 0 complete. Ready for development.
+        </p>
+    </div>
+    
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-3xl mb-2">📧</div>
+            <h3 class="font-semibold">Automated Emails</h3>
+            <p class="text-sm text-gray-500">Host confirmations, announcements, and reminders</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-3xl mb-2">👥</div>
+            <h3 class="font-semibold">Attendance Tracking</h3>
+            <p class="text-sm text-gray-500">Track who attends and manage host rotation</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="text-3xl mb-2">📸</div>
+            <h3 class="font-semibold">Photo Gallery</h3>
+            <p class="text-sm text-gray-500">Share memories from each lunch</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -33,17 +33,31 @@ guy-lunch/
 ├── Tuesday_Lunch_Scheduler_Project_Plan.md  # Requirements & progress
 ├── _archive/               # Archived files (don't delete, move here)
 │
-├── app/                    # [TO BE CREATED] Flask application
-│   ├── __init__.py         # App factory
+├── app/                    # Flask application
+│   ├── __init__.py         # App factory with create_app()
 │   ├── models/             # SQLAlchemy models
+│   │   ├── __init__.py     # Exports all models
+│   │   ├── member.py       # Member model
+│   │   ├── location.py     # Location model
+│   │   ├── lunch.py        # Lunch model
+│   │   ├── attendance.py   # Attendance model
+│   │   ├── rating.py       # Rating model
+│   │   └── photo.py        # Photo & PhotoTag models
 │   ├── routes/             # Route blueprints
-│   ├── services/           # Business logic
+│   │   ├── __init__.py
+│   │   └── main.py         # Main routes (/, /health)
+│   ├── services/           # Business logic (empty, ready for use)
 │   ├── templates/          # Jinja2 templates
+│   │   ├── base.html       # Base layout with Tailwind
+│   │   └── index.html      # Home page
 │   └── static/             # CSS, JS, uploads
 │
-├── migrations/             # [TO BE CREATED] Alembic migrations
-├── tests/                  # [TO BE CREATED] pytest tests
-└── requirements.txt        # [TO BE CREATED] Python dependencies
+├── migrations/             # Alembic migrations
+│   └── versions/           # Migration scripts
+├── run.py                  # Application entry point
+├── render.yaml             # Render Blueprint (IaC)
+├── requirements.txt        # Python dependencies
+└── instance/               # SQLite dev database (gitignored)
 ```
 
 ---
@@ -158,14 +172,37 @@ templates/
 - [x] Repository setup with .gitignore, .env.example
 - [x] Documentation structure established
 - [x] Render project linked with PostgreSQL
+- [x] Flask app skeleton created
+- [x] All database models implemented
+- [x] Initial migration created and applied locally
+- [x] Templates with Tailwind CSS (base.html, index.html)
+- [x] Health check endpoint (/health)
 
 ### In Progress
-- [ ] Flask app skeleton
+- [ ] Deploy to Render
 
 ### Next Steps
-1. Create Flask app structure
-2. Set up database models and migrations
-3. Deploy "Hello World" to Render
+1. Push to GitHub and deploy to Render
+2. Run migration on production database
+3. Begin Phase 1: Secretary Dashboard
+
+---
+
+## Local Development Commands
+
+```bash
+# Activate virtual environment
+source venv/Scripts/activate  # Windows Git Bash
+# or: venv\Scripts\activate   # Windows CMD
+
+# Run development server
+flask --app run:app run --port 5000
+
+# Database migrations
+flask --app run:app db migrate -m "Description"
+flask --app run:app db upgrade
+flask --app run:app db downgrade
+```
 
 ---
 
