@@ -258,3 +258,13 @@ def add_guest():
         'name': member.name,
         'member_type': member.member_type
     })
+
+
+@admin_bp.route('/seed-members', methods=['POST'])
+@admin_required
+def seed_members_route():
+    """One-time route to seed initial members."""
+    from app.seed_members import seed_members
+    result = seed_members()
+    flash(f"Seeded members: {result['added']} added, {result['skipped']} skipped, {result['total']} total", 'success')
+    return redirect(url_for('admin.members'))
