@@ -9,13 +9,14 @@
 ### Hosting (Render)
 - **Project:** Linked to GitHub repo `Caellwyn/guy-lunch` (auto-deploy on push to main)
 - **PostgreSQL:** Connected database, ready for schema initialization
-- **Web Service:** To be deployed
+- **Web Service:** Live and deployed ✅
+- **Start Command:** `gunicorn run:app`
 
 ### External Services
 | Service | Purpose | Status |
 |---------|---------|--------|
 | Render PostgreSQL | Primary database | ✅ Connected |
-| Render Web Service | Flask app hosting | ⏳ Pending |
+| Render Web Service | Flask app hosting | ✅ Deployed |
 | SendGrid | Transactional email | ⏳ Not configured |
 | Google Places API | Location search/details | ⏳ Not configured |
 
@@ -168,23 +169,23 @@ templates/
 
 ## Development Status
 
-### Completed
+### Completed - Phase 0 ✅
 - [x] Repository setup with .gitignore, .env.example
-- [x] Documentation structure established
+- [x] Documentation structure established (4-doc system)
 - [x] Render project linked with PostgreSQL
-- [x] Flask app skeleton created
-- [x] All database models implemented
+- [x] Flask app skeleton created (app factory pattern)
+- [x] All 7 database models implemented
 - [x] Initial migration created and applied locally
 - [x] Templates with Tailwind CSS (base.html, index.html)
 - [x] Health check endpoint (/health)
+- [x] Deployed to Render (live!)
 
-### In Progress
-- [ ] Deploy to Render
-
-### Next Steps
-1. Push to GitHub and deploy to Render
-2. Run migration on production database
-3. Begin Phase 1: Secretary Dashboard
+### Next Steps - Phase 1: MVP Core Functionality
+1. Run migration on production database
+2. Create secretary dashboard with attendance tracking
+3. Build hosting queue management
+4. Create email templates (preview only)
+5. Basic member management
 
 ---
 
@@ -206,4 +207,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 5, 2025*
+*Last Updated: December 6, 2025 - Phase 0 Complete*
