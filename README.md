@@ -68,10 +68,41 @@ flask run
 DATABASE_URL=postgresql://...
 SENDGRID_API_KEY=SG...
 GOOGLE_PLACES_API_KEY=AIza...
-ADMIN_PASSWORD_HASH=bcrypt...
+ADMIN_PASSWORD=your-admin-password
 SECRET_KEY=random-string...
 APP_URL=http://localhost:5000
 ```
+
+## Initial Setup (For New Groups)
+
+After deploying the app, set up your lunch group:
+
+1. **Access the Admin Dashboard**
+   - Navigate to `/admin`
+   - Log in with your admin password (default: `lunch-admin-2024`)
+
+2. **Go to Setup & Import**
+   - Click "Setup & Import" from the dashboard
+   - Or go directly to `/admin/setup`
+
+3. **Add Members via CSV Import**
+   - Click "Download CSV Template" to get the format
+   - Fill in member data in Excel/Google Sheets:
+     - `name` - Member's full name (required)
+     - `email` - Email address, used as unique identifier (required)
+     - `member_type` - `regular`, `guest`, or `inactive`
+     - `attendance_since_hosting` - Lunches attended since last hosting
+     - `last_hosted_date` - YYYY-MM-DD format
+     - `total_hosting_count` - Total times hosted
+     - `first_attended` - YYYY-MM-DD format
+   - Save as CSV and upload
+
+4. **Verify Setup**
+   - Check the Members page shows all imported members
+   - Verify the Hosting Queue is ordered correctly based on historical data
+   - You're ready to start tracking attendance!
+
+**Re-importing:** You can re-upload CSV anytime to update member data. Existing members (matched by email) will be updated; new emails create new members.
 
 ## Project Structure
 

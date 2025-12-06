@@ -337,12 +337,12 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 **Dependencies:** Phase 0 complete (database connection working)
 
-- [ ] **Design and document data model**
+- [x] **Design and document data model** ✅
   - Review the data model in this plan
   - Create ERD (Entity Relationship Diagram) if helpful
   - Confirm all tables and relationships
 
-- [ ] **Create database migrations**
+- [x] **Create database migrations** ✅
   - Members table (id, name, email, member_type, attendance_since_hosting, last_hosted_date, total_hosting_count, first_attended, created_at, updated_at)
   - Locations table (id, name, address, phone, google_place_id, google_rating, price_level, cuisine_type, group_friendly, last_visited, visit_count, avg_group_rating, created_at, updated_at)
   - Lunches table (id, date, location_id FK, host_id FK, expected_attendance, actual_attendance, reservation_confirmed, status, created_at, updated_at)
@@ -352,21 +352,21 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - Photo_Tags table (id, photo_id FK, member_id FK, created_at)
   - Run migrations to create all tables
 
-- [ ] **Prepare seed data**
+- [x] **Prepare seed data** ✅ (via CSV import system)
   - Collect real data: 25 member names and emails from lunch group
   - List 5-10 known restaurant locations with addresses
   - Create 3-4 historical lunch records (dates in past)
   - Set realistic attendance counts for each member (e.g., 5-20)
   - Identify who hosted those past lunches
 
-- [ ] **Load seed data into database**
+- [x] **Load seed data into database** ✅ (via CSV import at /admin/setup/import)
   - Insert all 25 members (member_type = 'regular')
   - Insert locations
   - Insert historical lunches
   - Insert attendance records for historical lunches
   - Verify attendance_since_hosting counts are correct
 
-- [ ] **Write basic database query functions**
+- [x] **Write basic database query functions** ✅
   - Get all active members (member_type = 'regular', ordered by name)
   - Get hosting queue (ordered by attendance_since_hosting DESC, then by name)
   - Get next host (member with highest attendance_since_hosting)
@@ -385,13 +385,13 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 ### 1.2: Secretary Dashboard - Attendance Tracker (4 hours)
 
-- [ ] **Create dashboard route/view**
+- [x] **Create dashboard route/view** ✅
   - Admin authentication (simple password for MVP)
   - Dashboard homepage
   - Navigation menu
   - **MOBILE-FIRST: Works on phone first, desktop second**
 
-- [ ] **Build attendance tracking interface**
+- [x] **Build attendance tracking interface** ✅
   - Display current week's lunch info
   - Show checkbox list of all active members
   - **Large touch targets (44px minimum) for phone tapping**
@@ -400,14 +400,14 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - Display expected vs actual attendance count
   - Save button (full-width on mobile)
 
-- [ ] **Implement attendance save logic**
+- [x] **Implement attendance save logic** ✅
   - Insert attendance records for checked members
   - Update member.attendance_since_hosting counters
   - If host checked: set last_hosted_date, reset counter to 0
   - If new member added: create member record
   - Update lunch.actual_attendance
 
-- [ ] **Build guest → member conversion**
+- [ ] **Build guest → member conversion** (partial - can edit member_type manually)
   - Show guests who attended 3+ times
   - "Convert to Member" button (mobile-friendly)
   - Retain attendance credits
@@ -433,7 +433,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 ### 1.3: Hosting Queue Management (2 hours)
 
-- [ ] **Display hosting queue**
+- [x] **Display hosting queue** ✅
   - Show next 5 hosts in order
   - Display attendance count for each
   - Show last hosted date
@@ -444,7 +444,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - Select two members to swap positions
   - Confirm and update
 
-- [ ] **View hosting history**
+- [x] **View hosting history** ✅ (partial - shows recent lunches on dashboard)
   - List of past lunches with host names
   - Filter by date range
   - Show hosting frequency per member
@@ -455,6 +455,26 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - ✓ Can manually swap two hosts
 - ✓ Queue re-sorts correctly after swap
 - ✓ Hosting history shows accurate data
+
+### 1.5: Initial Setup & CSV Import (Added)
+
+- [x] **Initial setup wizard** ✅ (`/admin/setup`)
+  - Status overview (member count, historical data status)
+  - Step-by-step guide for new groups
+  - Links to all setup functions
+
+- [x] **CSV import/export system** ✅ (`/admin/setup/import`)
+  - Download CSV template with current members
+  - Upload CSV to add/update members
+  - Parse and validate: name, email, member_type, attendance_since_hosting, last_hosted_date, total_hosting_count, first_attended
+  - Error handling with row-level feedback
+  - Re-runnable (updates existing, adds new)
+
+**Testable Milestones:**
+- ✓ Can download CSV template
+- ✓ Can upload CSV and see members added
+- ✓ Re-upload updates existing members by email
+- ✓ Invalid data shows clear error messages
 
 ### 1.4: Email Templates (Preview Only) (2 hours)
 

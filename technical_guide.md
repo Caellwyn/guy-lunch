@@ -91,10 +91,22 @@ guy-lunch/
 
 | Blueprint | File | Purpose |
 |-----------|------|---------|
-| admin | `admin.py` | Secretary dashboard, attendance tracking |
+| admin | `admin.py` | Secretary dashboard, attendance tracking, setup/import |
 | public | `public.py` | Host confirmation, rating submission |
 | member | `member.py` | Member portal, photo gallery |
 | api | `api.py` | JSON endpoints (if needed) |
+
+**Admin Routes (Implemented):**
+- `/admin/login` - Password authentication
+- `/admin/` - Secretary dashboard
+- `/admin/attendance/<date>` - Attendance tracking
+- `/admin/members` - Member management
+- `/admin/members/add` - Add member form
+- `/admin/members/<id>/edit` - Edit member
+- `/admin/hosting-queue` - View/manage hosting queue
+- `/admin/setup` - Initial setup wizard
+- `/admin/setup/import` - CSV import for members + historical data
+- `/admin/setup/export-template` - Download CSV template
 
 ### Services Layer
 **Location:** `app/services/`
@@ -180,12 +192,23 @@ templates/
 - [x] Health check endpoint (/health)
 - [x] Deployed to Render (live!)
 
-### Next Steps - Phase 1: MVP Core Functionality
-1. Run migration on production database
-2. Create secretary dashboard with attendance tracking
-3. Build hosting queue management
-4. Create email templates (preview only)
-5. Basic member management
+### Completed - Phase 1 (Partial) ✅
+- [x] Auto-migration on Render deployment
+- [x] Admin authentication (password-based)
+- [x] Secretary dashboard with quick actions
+- [x] Attendance tracking interface (mobile-first)
+- [x] Member management (list, add, edit)
+- [x] Hosting queue display and management
+- [x] Initial setup wizard (`/admin/setup`)
+- [x] CSV import/export for members + historical data
+- [x] Guest addition via AJAX on attendance page
+
+### Next Steps - Phase 1: Remaining
+1. Email templates (preview only)
+
+### Future - Phase 2: Email Automation
+1. SendGrid integration
+2. Scheduled email jobs
 
 ---
 
