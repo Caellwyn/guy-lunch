@@ -1,0 +1,99 @@
+# Claude AI Instructions - Tuesday Lunch Scheduler
+
+## Project Overview
+Web application automating weekly lunch coordination for a 25-member business networking group.
+See `Tuesday_Lunch_Scheduler_Project_Plan.md` for full requirements and phases.
+
+---
+
+## Available Tools
+
+### Render CLI
+- Deployed services accessible via `render` CLI
+- **Project:** Linked to this repository's remote (auto-deploy on push)
+- **PostgreSQL database:** Connected and ready for initialization
+- Use for deployments, database operations, and service management
+
+### Claude CLI (Sub-agents)
+- Can spawn additional Claude instances via bash: `claude <task>`
+- **Allowed for:** Parallel coding tasks when files don't overlap
+- **WARNING:** Coordinate which files each agent touches to avoid conflicts
+- **Best practice:** Assign distinct components/files to each sub-agent
+
+---
+
+## Documentation Structure
+
+**4 Core Documents (NO NEW SUMMARY FILES):**
+
+1. **`.claude`** (this file) - AI-focused quick reference and rules
+2. **`technical_guide.md`** - Updated after each completed/tested step; implementation details
+3. **`Tuesday_Lunch_Scheduler_Project_Plan.md`** - Development progress tracker; check off tasks as completed
+4. **`README.md`** - Human-focused; usage instructions, setup, standard README content
+
+---
+
+## Development Rules
+
+### 1. No New Summary Documents
+- Integrate all updates into one of the 4 core documents
+- Summarize progress in chat, not new files
+
+### 2. Development Pattern
+Follow this cycle for all work:
+```
+PLAN → CODE → TEST → DOCUMENT → COMMIT
+```
+- Plan: Understand the task, identify files to change
+- Code: Implement the changes
+- Test: Verify it works (run tests, manual verification)
+- Document: Update technical_guide.md and/or other docs
+- Commit: Git commit with clear message
+
+### 3. Ask for Help
+- Don't stay stuck - escalate to user (supervisor)
+- When asking for help, provide:
+  - Summary of the problem
+  - What you've tried
+  - Results/error messages
+  - Your best hypothesis
+
+### 4. No File Deletion
+- Archive files instead of deleting: move to `_archive/` directory
+- Preserve for potential later restoration
+
+### 5. No Rollbacks Without Approval
+- **NEVER** run `git reset`, `git revert`, or `git stash` without explicit user approval
+- These can cause permanent loss of work
+
+---
+
+## Quick Reference
+
+### Key Paths
+- Project root: `c:\Users\caell\OneDrive - caellwynai.com\code_projects\guy-lunch\`
+- Archive: `_archive/`
+
+### Tech Stack
+- Backend: Python Flask
+- Database: PostgreSQL (via Render)
+- Frontend: Flask templates + Tailwind CSS
+- Email: SendGrid
+- Maps: Google Places API
+
+### Current Phase
+Check `Tuesday_Lunch_Scheduler_Project_Plan.md` for current progress.
+
+---
+
+## Environment Variables Required
+```
+DATABASE_URL
+SECRET_KEY
+ADMIN_PASSWORD_HASH
+APP_URL
+SENDGRID_API_KEY
+GOOGLE_PLACES_API_KEY
+```
+
+See `.env.example` for template.
