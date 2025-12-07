@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from app import db
+from app.models import Lunch, Location, Member
 
 main_bp = Blueprint('main', __name__)
 
@@ -13,3 +15,112 @@ def index():
 def health():
     """Health check endpoint for Railway."""
     return {'status': 'healthy', 'app': 'Tuesday Lunch Scheduler'}
+
+
+# ============== HOST CONFIRMATION FLOW ==============
+
+@main_bp.route('/confirm/<token>')
+def confirm_host(token):
+    """Host confirmation page - select a restaurant."""
+    # Find the lunch by token
+    lunch = Lunch.query.filter_by(confirmation_token=token).first()
+
+    if not lunch:
+        flash('Invalid or expired confirmation link.', 'error')
+        return render_template('public/invalid_token.html')
+
+    # Check if already confirmed
+    if lunch.location_id and lunch.reservation_confirmed:
+        location = Location.query.get(lunch.location_id)
+        return render_template('public/already_confirmed.html',
+                               lunch=lunch,
+                               location=location)
+
+    # Get the host
+    host = Member.query.get(lunch.host_id) if lunch.host_id else None
+
+    # Get recent locations for selection
+    recent_locations = Location.query.filter_by(group_friendly=True).order_by(
+        Location.last_visited.desc()
+    ).limit(10).all()
+
+    return render_template('public/confirm_host.html',
+                           lunch=lunch,
+                           host=host,
+                           recent_locations=recent_locations,
+                           token=token)
+
+
+@main_bp.route('/confirm/<token>', methods=['POST'])
+def submit_confirmation(token):
+    """Handle host's restaurant selection."""
+    lunch = Lunch.query.filter_by(confirmation_token=token).first()
+
+    if not lunch:
+        flash('Invalid or expired confirmation link.', 'error')
+        return redirect(url_for('main.index'))
+
+    # Get selection type
+    selection_type = request.form.get('selection_type')
+
+    if selection_type == 'existing':
+        # Selected an existing location
+        location_id = request.form.get('location_id')
+        if not location_id:
+            flash('Please select a restaurant.', 'error')
+            return redirect(url_for('main.confirm_host', token=token))
+
+        location = Location.query.get(int(location_id))
+        if not location:
+            flash('Invalid location selected.', 'error')
+            return redirect(url_for('main.confirm_host', token=token))
+
+        # Update lunch record
+        lunch.location_id = location.id
+        lunch.reservation_confirmed = True
+        db.session.commit()
+
+        flash(f'Confirmed! You selected {location.name}.', 'success')
+        return render_template('public/confirmation_success.html',
+                               lunch=lunch,
+                               location=location)
+
+    elif selection_type == 'new':
+        # Suggested a new location
+        new_name = request.form.get('new_location_name', '').strip()
+        new_address = request.form.get('new_location_address', '').strip()
+        new_phone = request.form.get('new_location_phone', '').strip()
+        group_friendly = request.form.get('group_friendly') == 'on'
+
+        if not new_name:
+            flash('Please enter a restaurant name.', 'error')
+            return redirect(url_for('main.confirm_host', token=token))
+
+        if not group_friendly:
+            flash('Please confirm the restaurant can accommodate our group.', 'error')
+            return redirect(url_for('main.confirm_host', token=token))
+
+        # Create new location
+        location = Location(
+            name=new_name,
+            address=new_address or None,
+            phone=new_phone or None,
+            group_friendly=True,
+            visit_count=0
+        )
+        db.session.add(location)
+        db.session.flush()  # Get the ID
+
+        # Update lunch record
+        lunch.location_id = location.id
+        lunch.reservation_confirmed = True
+        db.session.commit()
+
+        flash(f'Confirmed! You added {location.name} as a new location.', 'success')
+        return render_template('public/confirmation_success.html',
+                               lunch=lunch,
+                               location=location)
+
+    else:
+        flash('Invalid selection.', 'error')
+        return redirect(url_for('main.confirm_host', token=token))

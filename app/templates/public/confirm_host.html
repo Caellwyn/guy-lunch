@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Select Restaurant - Tuesday Lunch{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-2xl font-bold text-gray-900">You're Hosting!</h1>
+        <p class="text-gray-600 mt-2">
+            Tuesday, {{ lunch.date.strftime('%B %d, %Y') }}
+        </p>
+        {% if host %}
+            <p class="text-sm text-gray-500 mt-1">Hi {{ host.name }}!</p>
+        {% endif %}
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Info Box -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <p class="text-blue-800 text-sm">
+            Please select a restaurant for this week's lunch. The secretary will make a reservation once you confirm.
+        </p>
+    </div>
+
+    <form action="{{ url_for('main.submit_confirmation', token=token) }}" method="POST" class="space-y-6">
+        <!-- Previous Locations -->
+        {% if recent_locations %}
+            <div class="bg-white rounded-lg shadow p-4">
+                <h2 class="font-semibold text-gray-900 mb-4">Previous Locations</h2>
+                <div class="space-y-3">
+                    {% for location in recent_locations %}
+                        <label class="block p-4 border-2 rounded-lg cursor-pointer hover:border-blue-500 transition-colors
+                                      {% if loop.first %}border-blue-500 bg-blue-50{% else %}border-gray-200{% endif %}">
+                            <div class="flex items-start">
+                                <input type="radio" name="location_id" value="{{ location.id }}"
+                                       class="mt-1 h-5 w-5 text-blue-600"
+                                       {% if loop.first %}checked{% endif %}
+                                       onchange="document.getElementById('selection_type').value='existing';">
+                                <div class="ml-3 flex-1">
+                                    <div class="font-medium text-gray-900">{{ location.name }}</div>
+                                    {% if location.address %}
+                                        <div class="text-sm text-gray-500">{{ location.address }}</div>
+                                    {% endif %}
+                                    <div class="flex flex-wrap gap-2 mt-2 text-xs">
+                                        {% if location.avg_group_rating %}
+                                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                                                Group: {{ "%.1f"|format(location.avg_group_rating) }}/5
+                                            </span>
+                                        {% endif %}
+                                        {% if location.google_rating %}
+                                            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                                                Google: {{ location.google_rating }}/5
+                                            </span>
+                                        {% endif %}
+                                        {% if location.price_level %}
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded">
+                                                {{ '$' * location.price_level }}
+                                            </span>
+                                        {% endif %}
+                                        {% if location.last_visited %}
+                                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                                Last: {{ location.last_visited.strftime('%b %d') }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- New Location -->
+        <div class="bg-white rounded-lg shadow p-4">
+            <h2 class="font-semibold text-gray-900 mb-4">Suggest a New Place</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Restaurant Name</label>
+                    <input type="text" name="new_location_name" id="new_location_name"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., Monticello Hotel"
+                           onfocus="document.getElementById('selection_type').value='new'; document.querySelectorAll('input[name=location_id]').forEach(r => r.checked = false);">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Address (optional)</label>
+                    <input type="text" name="new_location_address"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="123 Main St, Longview, WA">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
+                    <input type="tel" name="new_location_phone"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="(360) 555-1234">
+                </div>
+                <div class="flex items-start">
+                    <input type="checkbox" name="group_friendly" id="group_friendly"
+                           class="mt-1 h-5 w-5 text-blue-600 rounded">
+                    <label for="group_friendly" class="ml-3 text-sm text-gray-700">
+                        I confirm this restaurant can accommodate our group (15-20 people)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden field to track selection type -->
+        <input type="hidden" name="selection_type" id="selection_type" value="{% if recent_locations %}existing{% else %}new{% endif %}">
+
+        <!-- Submit Button -->
+        <button type="submit"
+                class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors shadow-lg">
+            Confirm Restaurant
+        </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500">
+        Please respond by Friday morning so we have time to make a reservation.
+    </p>
+</div>
+{% endblock %}

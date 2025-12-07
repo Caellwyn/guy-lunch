@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Email Jobs - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Email Jobs</h1>
+            <p class="text-gray-600">Manage and trigger automated email jobs</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('admin.emails') }}"
+               class="text-blue-600 hover:text-blue-800 text-sm">
+                &larr; Email Templates
+            </a>
+            <a href="{{ url_for('admin.email_logs') }}"
+               class="text-blue-600 hover:text-blue-800 text-sm">
+                View Logs
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Current Status -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Current Status</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-blue-50 rounded-lg p-4">
+                <p class="text-sm text-blue-600 font-medium">Next Tuesday</p>
+                <p class="text-xl font-bold text-blue-900">{{ next_tuesday.strftime('%B %d, %Y') }}</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4">
+                <p class="text-sm text-green-600 font-medium">Next Host</p>
+                <p class="text-xl font-bold text-green-900">
+                    {% if hosting_queue %}
+                        {{ hosting_queue[0].name }}
+                    {% else %}
+                        No hosts available
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-4">
+                <p class="text-sm text-purple-600 font-medium">Lunch Status</p>
+                <p class="text-xl font-bold text-purple-900">
+                    {% if next_lunch %}
+                        {% if next_lunch.location_id and next_lunch.reservation_confirmed %}
+                            Confirmed
+                        {% elif next_lunch.location_id %}
+                            Location Set
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    {% else %}
+                        Not Created
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Banner -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+        <div class="flex items-start">
+            <span class="text-yellow-500 text-xl mr-3">&#9888;</span>
+            <div>
+                <h3 class="text-yellow-800 font-semibold">Caution: Real Emails</h3>
+                <p class="text-yellow-700 text-sm">
+                    Triggering these jobs will send real emails to members. Use "Dry Run" to test without sending.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Job 1: Host Confirmation -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">1. Host Confirmation</h3>
+                    <p class="text-sm text-gray-500">Normally: Thursday 9am</p>
+                </div>
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">Step 1</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Sends email to <strong>{{ hosting_queue[0].name if hosting_queue else 'next host' }}</strong>
+                asking them to select a restaurant.
+            </p>
+            <div class="flex gap-2">
+                <form action="{{ url_for('admin.trigger_email_job', job_name='host_confirmation') }}" method="POST" class="inline">
+                    <input type="hidden" name="dry_run" value="true">
+                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
+                        Dry Run
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.trigger_email_job', job_name='host_confirmation') }}" method="POST" class="inline"
+                      onsubmit="return confirm('Send host confirmation email to {{ hosting_queue[0].name if hosting_queue else 'the next host' }}?');">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                        Send Now
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job 2: Secretary Reminder -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">2. Secretary Reminder</h3>
+                    <p class="text-sm text-gray-500">Normally: Friday 9am</p>
+                </div>
+                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Step 2</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                {% if next_lunch and next_lunch.location_id and next_lunch.reservation_confirmed %}
+                    Will send <strong>reservation reminder</strong> with location details.
+                {% else %}
+                    Will send <strong>alert</strong> that host hasn't confirmed.
+                {% endif %}
+            </p>
+            <div class="flex gap-2">
+                <form action="{{ url_for('admin.trigger_email_job', job_name='secretary_reminder') }}" method="POST" class="inline">
+                    <input type="hidden" name="dry_run" value="true">
+                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
+                        Dry Run
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.trigger_email_job', job_name='secretary_reminder') }}" method="POST" class="inline"
+                      onsubmit="return confirm('Send secretary reminder email?');">
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+                        Send Now
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job 3: Group Announcement -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">3. Group Announcement</h3>
+                    <p class="text-sm text-gray-500">Normally: Monday 9am</p>
+                </div>
+                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">Step 3</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Sends location announcement to <strong>all active members</strong>.
+                {% if not next_lunch or not next_lunch.location_id %}
+                    <br><span class="text-red-600">Requires location to be set first.</span>
+                {% endif %}
+            </p>
+            <div class="flex gap-2">
+                <form action="{{ url_for('admin.trigger_email_job', job_name='announcement') }}" method="POST" class="inline">
+                    <input type="hidden" name="dry_run" value="true">
+                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
+                        Dry Run
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.trigger_email_job', job_name='announcement') }}" method="POST" class="inline"
+                      onsubmit="return confirm('Send announcement to ALL members?');">
+                    <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                        Send Now
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job 4: Rating Request -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">4. Rating Request</h3>
+                    <p class="text-sm text-gray-500">Normally: Tuesday 6pm</p>
+                </div>
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">Step 4</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Sends rating request to <strong>attendees only</strong> after lunch.
+                Requires attendance to be logged first.
+            </p>
+            <div class="flex gap-2">
+                <form action="{{ url_for('admin.trigger_email_job', job_name='rating_request') }}" method="POST" class="inline">
+                    <input type="hidden" name="dry_run" value="true">
+                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
+                        Dry Run
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.trigger_email_job', job_name='rating_request') }}" method="POST" class="inline"
+                      onsubmit="return confirm('Send rating requests to attendees?');">
+                    <button type="submit" class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-700 transition-colors">
+                        Send Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Email Activity -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Email Activity</h2>
+            <a href="{{ url_for('admin.email_logs') }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                View All
+            </a>
+        </div>
+        {% if recent_emails %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left py-2 px-3 text-gray-600">Type</th>
+                            <th class="text-left py-2 px-3 text-gray-600">Recipient</th>
+                            <th class="text-left py-2 px-3 text-gray-600">Status</th>
+                            <th class="text-left py-2 px-3 text-gray-600">Sent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for email in recent_emails %}
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-2 px-3">
+                                    <span class="{% if email.email_type == 'host_confirmation' %}text-blue-600{% elif email.email_type == 'announcement' %}text-purple-600{% elif email.email_type == 'secretary_reminder' %}text-green-600{% else %}text-yellow-600{% endif %}">
+                                        {{ email.email_type.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td class="py-2 px-3">{{ email.recipient_name or email.recipient_email }}</td>
+                                <td class="py-2 px-3">
+                                    <span class="px-2 py-1 rounded text-xs
+                                        {% if email.status == 'sent' %}bg-green-100 text-green-800
+                                        {% elif email.status == 'failed' %}bg-red-100 text-red-800
+                                        {% elif email.status == 'dry_run' %}bg-gray-100 text-gray-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ email.status }}
+                                    </span>
+                                </td>
+                                <td class="py-2 px-3 text-gray-500">
+                                    {{ email.sent_at.strftime('%m/%d %H:%M') if email.sent_at else 'N/A' }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray-500 text-center py-8">No emails sent yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmed! - Tuesday Lunch{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto text-center space-y-6">
+    <!-- Success Icon -->
+    <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+    </div>
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Confirmed!</h1>
+        <p class="text-gray-600 mt-2">Thanks for selecting this week's restaurant.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Confirmation Details -->
+    <div class="bg-white rounded-lg shadow p-6 text-left">
+        <h2 class="font-semibold text-gray-900 mb-4 text-center">Lunch Details</h2>
+
+        <div class="space-y-4">
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-600">Date</span>
+                <span class="font-medium">{{ lunch.date.strftime('%A, %B %d, %Y') }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-600">Time</span>
+                <span class="font-medium">12:00 PM</span>
+            </div>
+            <div class="flex justify-between items-start py-2 border-b">
+                <span class="text-gray-600">Restaurant</span>
+                <div class="text-right">
+                    <span class="font-medium">{{ location.name }}</span>
+                    {% if location.address %}
+                        <div class="text-sm text-gray-500">{{ location.address }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if location.phone %}
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-gray-600">Phone</span>
+                    <a href="tel:{{ location.phone }}" class="font-medium text-blue-600">{{ location.phone }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="bg-blue-50 rounded-lg p-4 text-left">
+        <h3 class="font-semibold text-blue-900 mb-2">What happens next?</h3>
+        <ul class="text-sm text-blue-800 space-y-1">
+            <li>The secretary will make a reservation</li>
+            <li>An announcement email goes out Monday morning</li>
+            <li>See you Tuesday at noon!</li>
+        </ul>
+    </div>
+
+    <!-- Map Link -->
+    {% if location.address %}
+        <a href="https://www.google.com/maps/search/?api=1&query={{ location.address|urlencode }}"
+           target="_blank"
+           class="inline-flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            View on Google Maps
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

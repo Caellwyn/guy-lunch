@@ -637,3 +637,73 @@ def preview_email(email_type):
                            recipient=recipient,
                            brevo_params=params)
 
+
+# ============== EMAIL JOB TRIGGERS ==============
+
+@admin_bp.route('/emails/jobs')
+@admin_required
+def email_jobs():
+    """Email job management page - view and trigger email jobs."""
+    from app.models import EmailLog, Lunch
+
+    # Get next Tuesday info
+    today = date.today()
+    days_until_tuesday = (1 - today.weekday()) % 7
+    if days_until_tuesday == 0 and today.weekday() == 1:
+        next_tuesday = today
+    else:
+        next_tuesday = today + timedelta(days=days_until_tuesday)
+
+    # Get lunch for next Tuesday
+    next_lunch = Lunch.query.filter_by(date=next_tuesday).first()
+
+    # Get recent email logs
+    recent_emails = EmailLog.query.order_by(EmailLog.sent_at.desc()).limit(20).all()
+
+    # Get hosting queue
+    hosting_queue = Member.query.filter_by(member_type='regular').order_by(
+        Member.attendance_since_hosting.desc(),
+        Member.name
+    ).limit(3).all()
+
+    return render_template('admin/email_jobs.html',
+                           next_tuesday=next_tuesday,
+                           next_lunch=next_lunch,
+                           recent_emails=recent_emails,
+                           hosting_queue=hosting_queue)
+
+
+@admin_bp.route('/emails/trigger/<job_name>', methods=['POST'])
+@admin_required
+def trigger_email_job(job_name):
+    """Manually trigger an email job."""
+    from app.services.email_jobs import run_email_job
+
+    # Check for dry_run parameter
+    dry_run = request.form.get('dry_run', 'false').lower() == 'true'
+
+    result = run_email_job(job_name, dry_run=dry_run)
+
+    if result['success']:
+        flash(f"Job '{job_name}' completed: {result.get('message', 'Success')}", 'success')
+    else:
+        flash(f"Job '{job_name}' failed: {result.get('message', 'Unknown error')}", 'error')
+
+    return redirect(url_for('admin.email_jobs'))
+
+
+@admin_bp.route('/emails/logs')
+@admin_required
+def email_logs():
+    """View all email logs."""
+    from app.models import EmailLog
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+
+    logs = EmailLog.query.order_by(EmailLog.sent_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return render_template('admin/email_logs.html', logs=logs)
+

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Already Confirmed - Tuesday Lunch{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto text-center space-y-6">
+    <!-- Info Icon -->
+    <div class="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
+        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+    </div>
+
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Already Confirmed</h1>
+        <p class="text-gray-600 mt-2">This lunch has already been confirmed.</p>
+    </div>
+
+    <!-- Confirmation Details -->
+    <div class="bg-white rounded-lg shadow p-6 text-left">
+        <h2 class="font-semibold text-gray-900 mb-4 text-center">Lunch Details</h2>
+
+        <div class="space-y-4">
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-600">Date</span>
+                <span class="font-medium">{{ lunch.date.strftime('%A, %B %d, %Y') }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b">
+                <span class="text-gray-600">Time</span>
+                <span class="font-medium">12:00 PM</span>
+            </div>
+            <div class="flex justify-between items-start py-2 border-b">
+                <span class="text-gray-600">Restaurant</span>
+                <div class="text-right">
+                    <span class="font-medium">{{ location.name }}</span>
+                    {% if location.address %}
+                        <div class="text-sm text-gray-500">{{ location.address }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-sm text-gray-500">
+        If you need to change the restaurant, please contact the secretary.
+    </p>
+</div>
+{% endblock %}

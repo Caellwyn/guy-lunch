@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Email Logs - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Email Logs</h1>
+            <p class="text-gray-600">History of all sent emails</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('admin.email_jobs') }}"
+               class="text-blue-600 hover:text-blue-800 text-sm">
+                &larr; Email Jobs
+            </a>
+            <a href="{{ url_for('admin.emails') }}"
+               class="text-blue-600 hover:text-blue-800 text-sm">
+                Email Templates
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Logs Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if logs.items %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left py-3 px-4 text-gray-600 font-medium">Type</th>
+                            <th class="text-left py-3 px-4 text-gray-600 font-medium">Recipient</th>
+                            <th class="text-left py-3 px-4 text-gray-600 font-medium">Subject</th>
+                            <th class="text-left py-3 px-4 text-gray-600 font-medium">Status</th>
+                            <th class="text-left py-3 px-4 text-gray-600 font-medium">Sent At</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for email in logs.items %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <span class="font-medium
+                                        {% if email.email_type == 'host_confirmation' %}text-blue-600
+                                        {% elif email.email_type == 'announcement' %}text-purple-600
+                                        {% elif email.email_type == 'secretary_reminder' %}text-green-600
+                                        {% else %}text-yellow-600{% endif %}">
+                                        {{ email.email_type.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="font-medium text-gray-900">{{ email.recipient_name or 'Unknown' }}</div>
+                                    <div class="text-gray-500 text-xs">{{ email.recipient_email }}</div>
+                                </td>
+                                <td class="py-3 px-4 max-w-xs truncate" title="{{ email.subject }}">
+                                    {{ email.subject }}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 rounded text-xs font-medium
+                                        {% if email.status == 'sent' %}bg-green-100 text-green-800
+                                        {% elif email.status == 'delivered' %}bg-green-100 text-green-800
+                                        {% elif email.status == 'failed' %}bg-red-100 text-red-800
+                                        {% elif email.status == 'dry_run' %}bg-gray-100 text-gray-800
+                                        {% elif email.status == 'bounced' %}bg-red-100 text-red-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ email.status }}
+                                    </span>
+                                    {% if email.error_message %}
+                                        <span class="text-red-500 text-xs ml-1" title="{{ email.error_message }}">
+                                            &#9888;
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-gray-500">
+                                    {% if email.sent_at %}
+                                        {{ email.sent_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if logs.pages > 1 %}
+                <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t">
+                    <div class="text-sm text-gray-600">
+                        Showing {{ logs.page * logs.per_page - logs.per_page + 1 }} to
+                        {{ [logs.page * logs.per_page, logs.total]|min }} of {{ logs.total }} emails
+                    </div>
+                    <div class="flex gap-2">
+                        {% if logs.has_prev %}
+                            <a href="{{ url_for('admin.email_logs', page=logs.prev_num) }}"
+                               class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100">
+                                Previous
+                            </a>
+                        {% endif %}
+                        {% if logs.has_next %}
+                            <a href="{{ url_for('admin.email_logs', page=logs.next_num) }}"
+                               class="px-3 py-1 rounded border text-gray-600 hover:bg-gray-100">
+                                Next
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="p-8 text-center text-gray-500">
+                <p class="text-lg mb-2">No emails sent yet</p>
+                <p class="text-sm">Emails will appear here after you trigger a job or the scheduled automation runs.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

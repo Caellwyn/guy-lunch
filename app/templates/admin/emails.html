@@ -118,11 +118,24 @@
         </div>
     </div>
 
-    <!-- Coming Soon -->
-    <div class="bg-gray-100 rounded-lg p-6 text-center">
-        <p class="text-gray-600">
-            <strong>Coming in Phase 2:</strong> Manual send capability and Brevo integration
-        </p>
+    <!-- Email Jobs Link -->
+    <div class="bg-gray-100 rounded-lg p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h3 class="font-semibold text-gray-900">Email Automation</h3>
+                <p class="text-gray-600 text-sm">Trigger email jobs manually or view send history</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{{ url_for('admin.email_jobs') }}"
+                   class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors">
+                    Manage Jobs
+                </a>
+                <a href="{{ url_for('admin.email_logs') }}"
+                   class="inline-block bg-gray-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors">
+                    View Logs
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
