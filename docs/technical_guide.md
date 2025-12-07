@@ -110,6 +110,10 @@ guy-lunch/
 - `/admin/members/add` - Add member form
 - `/admin/members/<id>/edit` - Edit member
 - `/admin/hosting-queue` - View/manage hosting queue
+- `/admin/locations` - Location management
+- `/admin/locations/add` - Add location (POST)
+- `/admin/locations/<id>/edit` - Edit location
+- `/admin/locations/<id>/delete` - Delete location (POST)
 - `/admin/setup` - Initial setup wizard
 - `/admin/setup/import` - CSV import for members + historical data
 - `/admin/setup/export-template` - Download CSV template
@@ -256,8 +260,12 @@ templates/
   - Auto-populate address, phone, rating, price, cuisine
   - Fallback to manual entry if needed
   - Prevents duplicate locations via google_place_id
+- [x] Location management dashboard (`/admin/locations`)
+  - Add locations via Google Places search
+  - Manual entry fallback
+  - Edit/delete existing locations
+  - View all location details (rating, price, visits)
 - [ ] Rating submission page and system
-- [ ] Location management dashboard
 
 ---
 
@@ -279,4 +287,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 6, 2025 - Phase 3 In Progress (Google Places Integration)*
+*Last Updated: December 6, 2025 - Phase 3 In Progress (Locations Manager Complete)*
