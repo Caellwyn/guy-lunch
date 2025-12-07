@@ -7,7 +7,7 @@ import io
 import secrets
 import os
 from app import db
-from app.models import Member, Location, Lunch, Attendance
+from app.models import Member, Location, Lunch, Attendance, Setting
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -706,4 +706,44 @@ def email_logs():
     )
 
     return render_template('admin/email_logs.html', logs=logs)
+
+
+# ============== SETTINGS ==============
+
+@admin_bp.route('/settings')
+@admin_required
+def settings():
+    """Application settings page."""
+    members = Member.query.filter(
+        Member.member_type.in_(['regular', 'guest'])
+    ).order_by(Member.name).all()
+
+    # Get current settings
+    secretary_id = Setting.get('secretary_member_id')
+    secretary = Member.query.get(int(secretary_id)) if secretary_id else None
+
+    return render_template('admin/settings.html',
+                           members=members,
+                           secretary=secretary)
+
+
+@admin_bp.route('/settings/secretary', methods=['POST'])
+@admin_required
+def set_secretary():
+    """Set the secretary member."""
+    member_id = request.form.get('secretary_id')
+
+    if member_id:
+        member = Member.query.get(int(member_id))
+        if member:
+            Setting.set('secretary_member_id', str(member.id))
+            flash(f'{member.name} is now set as the secretary.', 'success')
+        else:
+            flash('Invalid member selected.', 'error')
+    else:
+        # Clear secretary
+        Setting.set('secretary_member_id', '')
+        flash('Secretary has been cleared.', 'success')
+
+    return redirect(url_for('admin.settings'))
 

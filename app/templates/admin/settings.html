@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
+            <p class="text-gray-600">Configure application settings</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="text-blue-600 hover:text-blue-800 text-sm">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Secretary Setting -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Secretary</h2>
+        <p class="text-gray-600 text-sm mb-4">
+            The secretary receives reminder emails about making reservations and handling unconfirmed hosts.
+        </p>
+
+        <form action="{{ url_for('admin.set_secretary') }}" method="POST" class="space-y-4">
+            <div>
+                <label for="secretary_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Select Secretary
+                </label>
+                <select name="secretary_id" id="secretary_id"
+                        class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- No secretary selected --</option>
+                    {% for member in members %}
+                        <option value="{{ member.id }}"
+                                {% if secretary and secretary.id == member.id %}selected{% endif %}>
+                            {{ member.name }}{% if member.email %} ({{ member.email }}){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if secretary %}
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded">Current:</span>
+                    <span class="font-medium">{{ secretary.name }}</span>
+                    <span class="text-gray-500">({{ secretary.email }})</span>
+                </div>
+            {% else %}
+                <div class="text-sm text-yellow-600">
+                    No secretary is currently set. Secretary reminder emails will not be sent.
+                </div>
+            {% endif %}
+
+            <button type="submit"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Save
+            </button>
+        </form>
+    </div>
+
+    <!-- Other Settings Placeholder -->
+    <div class="bg-gray-100 rounded-lg p-6">
+        <h3 class="font-semibold text-gray-900 mb-2">Additional Settings</h3>
+        <p class="text-gray-600 text-sm">
+            More settings will be added here as the app grows (e.g., default lunch time, email preferences, etc.)
+        </p>
+    </div>
+</div>
+{% endblock %}

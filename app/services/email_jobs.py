@@ -17,7 +17,7 @@ from datetime import date, timedelta, datetime
 from flask import current_app
 
 from app import db
-from app.models import Member, Lunch, Location, Attendance, EmailLog
+from app.models import Member, Lunch, Location, Attendance, EmailLog, Setting
 from app.services.email_service import email_service
 
 
@@ -183,14 +183,19 @@ def send_secretary_reminder(dry_run: bool = False) -> dict:
             result['message'] = 'No lunch record found for next Tuesday'
             return result
 
-        # Get secretary email (for now, use an env var or first member)
-        secretary_email = os.environ.get('SECRETARY_EMAIL')
-        secretary_name = os.environ.get('SECRETARY_NAME', 'Secretary')
-
-        if not secretary_email:
-            # Fall back to first regular member (you may want to change this)
-            result['message'] = 'SECRETARY_EMAIL not configured'
+        # Get secretary from settings
+        secretary_id = Setting.get('secretary_member_id')
+        if not secretary_id:
+            result['message'] = 'No secretary configured. Go to Admin > Settings to set one.'
             return result
+
+        secretary = Member.query.get(int(secretary_id))
+        if not secretary or not secretary.email:
+            result['message'] = 'Secretary member not found or has no email.'
+            return result
+
+        secretary_email = secretary.email
+        secretary_name = secretary.name
 
         # Check if location is confirmed
         if lunch.location_id and lunch.reservation_confirmed:

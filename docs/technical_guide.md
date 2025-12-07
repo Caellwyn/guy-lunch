@@ -206,7 +206,7 @@ templates/
 - [x] Health check endpoint (/health)
 - [x] Deployed to Railway (live!)
 
-### Completed - Phase 1 (Partial) ✅
+### Completed - Phase 1 ✅
 - [x] Auto-migration on Railway deployment
 - [x] Admin authentication (password-based)
 - [x] Secretary dashboard with quick actions
@@ -216,17 +216,33 @@ templates/
 - [x] Initial setup wizard (`/admin/setup`)
 - [x] CSV import/export for members + historical data
 - [x] Guest addition via AJAX on attendance page
+- [x] Email templates with preview system
 
-### Next Steps - Phase 1: Remaining
-1. ~~Email templates (preview only)~~ ✅
-2. Basic member management polish (1.5) - optional refinements
+### Completed - Phase 2 (Email Automation) ✅
+- [x] Brevo email service integration (`app/services/email_service.py`)
+- [x] Email logging to database (EmailLog model)
+- [x] 4 email job functions (`app/services/email_jobs.py`):
+  - Host confirmation (Thursday 9am)
+  - Secretary reminder (Friday 9am)
+  - Group announcement (Monday 9am)
+  - Rating request (Tuesday 6pm)
+- [x] Admin email jobs page with manual triggers (`/admin/emails/jobs`)
+- [x] Email logs viewer (`/admin/emails/logs`)
+- [x] Host confirmation flow (`/confirm/<token>`)
+  - Select from existing locations
+  - Add new location with capacity check
+  - Mobile-first design
+- [x] App settings page (`/admin/settings`)
+  - Secretary selection from members list
 
-**Phase 1 is essentially complete!** Ready to proceed to Phase 2.
+### Pending - Phase 2: Remaining
+- [ ] Railway cron service setup (jobs are manual-only for now)
+- [ ] Testing with real emails before enabling automation
 
-### Future - Phase 2: Email Automation
-1. Brevo integration (upload templates, configure API)
-2. Scheduled email jobs (cron jobs calling Brevo API)
-3. Manual send capability from admin dashboard
+### Future - Phase 3: Location Management & Ratings
+1. Location database with Google Places integration
+2. Rating collection after each lunch
+3. Location analytics and recommendations
 
 ---
 
@@ -248,4 +264,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 6, 2025 - Phase 1 Complete (Email Templates Added)*
+*Last Updated: December 7, 2025 - Phase 2 Complete (Email Automation)*
