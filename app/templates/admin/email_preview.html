@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Preview: {{ email_type|replace('_', ' ')|title }} - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Email Preview</h1>
+            <p class="text-gray-600">{{ email_type|replace('_', ' ')|title }}</p>
+        </div>
+        <a href="{{ url_for('admin.emails') }}"
+           class="text-blue-600 hover:text-blue-800 text-sm">
+            &larr; Back to Email Templates
+        </a>
+    </div>
+
+    <!-- Email Metadata -->
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+                <span class="text-gray-500">Subject:</span>
+                <p class="font-medium text-gray-900">{{ subject }}</p>
+            </div>
+            <div>
+                <span class="text-gray-500">To:</span>
+                <p class="font-medium text-gray-900">{{ recipient }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Toggle -->
+    <div class="flex gap-2 border-b pb-2">
+        <button type="button" id="btn-desktop" onclick="setPreviewMode('desktop')"
+                class="px-4 py-2 text-sm font-medium rounded-t-lg bg-blue-600 text-white">
+            Desktop
+        </button>
+        <button type="button" id="btn-mobile" onclick="setPreviewMode('mobile')"
+                class="px-4 py-2 text-sm font-medium rounded-t-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+            Mobile
+        </button>
+    </div>
+
+    <!-- Email Preview Frame -->
+    <div class="bg-gray-200 p-4 rounded-lg overflow-x-auto">
+        <div id="preview-container" class="mx-auto transition-all duration-300" style="max-width: 100%;">
+            <div id="email-preview-wrapper" class="bg-white rounded shadow-lg" style="min-height: 600px;">
+                {{ email_html }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <p class="text-yellow-800 text-sm">
+            <strong>Note:</strong> This is a preview with sample data. Templates use Brevo's <code>{{ "{{ params.VARIABLE }}" }}</code> syntax for dynamic content.
+        </p>
+    </div>
+
+    <!-- Brevo Params Reference -->
+    {% if brevo_params %}
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="font-semibold text-gray-900 mb-3">Brevo Template Variables</h3>
+        <p class="text-sm text-gray-600 mb-3">These values will be passed in the <code>params</code> object when sending via Brevo API:</p>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left py-2 pr-4 font-medium text-gray-700">Variable</th>
+                        <th class="text-left py-2 font-medium text-gray-700">Sample Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in brevo_params.items() %}
+                    <tr class="border-b last:border-0">
+                        <td class="py-2 pr-4 font-mono text-blue-600">{{ key }}</td>
+                        <td class="py-2 text-gray-600 break-all">{{ value|truncate(60) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Coming Soon: Manual Send -->
+    <div class="bg-gray-100 rounded-lg p-6 text-center">
+        <p class="text-gray-600 mb-4">
+            <strong>Coming in Phase 2:</strong> Send test emails and trigger manual sends via Brevo
+        </p>
+        <button disabled class="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed">
+            Send Test Email (Coming Soon)
+        </button>
+    </div>
+</div>
+
+<script>
+function setPreviewMode(mode) {
+    const container = document.getElementById('preview-container');
+    const btnDesktop = document.getElementById('btn-desktop');
+    const btnMobile = document.getElementById('btn-mobile');
+
+    if (mode === 'mobile') {
+        container.style.maxWidth = '375px';
+        btnMobile.classList.remove('bg-gray-200', 'text-gray-700');
+        btnMobile.classList.add('bg-blue-600', 'text-white');
+        btnDesktop.classList.remove('bg-blue-600', 'text-white');
+        btnDesktop.classList.add('bg-gray-200', 'text-gray-700');
+    } else {
+        container.style.maxWidth = '100%';
+        btnDesktop.classList.remove('bg-gray-200', 'text-gray-700');
+        btnDesktop.classList.add('bg-blue-600', 'text-white');
+        btnMobile.classList.remove('bg-blue-600', 'text-white');
+        btnMobile.classList.add('bg-gray-200', 'text-gray-700');
+    }
+}
+
+</script>
+{% endblock %}

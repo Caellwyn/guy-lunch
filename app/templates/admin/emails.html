@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Email Templates - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Email Templates</h1>
+            <p class="text-gray-600">Preview and manage automated email templates</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="text-blue-600 hover:text-blue-800 text-sm">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Email Schedule Info -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <h3 class="text-blue-800 font-semibold mb-2">Automated Email Schedule</h3>
+        <ul class="text-blue-700 text-sm space-y-1">
+            <li><strong>Thursday 9am:</strong> Host confirmation request sent to next host</li>
+            <li><strong>Friday 9am:</strong> Secretary reminder (reservation or host alert)</li>
+            <li><strong>Monday 9am:</strong> Group announcement to all members</li>
+            <li><strong>Tuesday 6pm:</strong> Rating request to attendees</li>
+        </ul>
+    </div>
+
+    <!-- Email Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Host Confirmation -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">Host Confirmation</h3>
+                    <p class="text-sm text-gray-500">Sent Thursday 9am</p>
+                </div>
+                <span class="text-2xl">📮</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Asks the next host to select a restaurant for the upcoming Tuesday lunch.
+            </p>
+            <a href="{{ url_for('admin.preview_email', email_type='host_confirmation') }}"
+               class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                Preview Email
+            </a>
+        </div>
+
+        <!-- Secretary Reminder (Confirmed) -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">Secretary Reminder</h3>
+                    <p class="text-sm text-gray-500">Sent Friday 9am</p>
+                </div>
+                <span class="text-2xl">📋</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Reminds secretary to make reservation (if confirmed) or alerts about unresponsive host.
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url_for('admin.preview_email', email_type='secretary_reminder_confirmed') }}"
+                   class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
+                    Preview (Confirmed)
+                </a>
+                <a href="{{ url_for('admin.preview_email', email_type='secretary_reminder_not_confirmed') }}"
+                   class="inline-block bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition-colors">
+                    Preview (Alert)
+                </a>
+            </div>
+        </div>
+
+        <!-- Group Announcement -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">Group Announcement</h3>
+                    <p class="text-sm text-gray-500">Sent Monday 9am</p>
+                </div>
+                <span class="text-2xl">📢</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Announces Tuesday's lunch location to all group members.
+            </p>
+            <a href="{{ url_for('admin.preview_email', email_type='announcement') }}"
+               class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                Preview Email
+            </a>
+        </div>
+
+        <!-- Rating Request -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="font-semibold text-gray-900">Rating Request</h3>
+                    <p class="text-sm text-gray-500">Sent Tuesday 6pm</p>
+                </div>
+                <span class="text-2xl">⭐</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-4">
+                Asks attendees to rate the restaurant after lunch.
+            </p>
+            <a href="{{ url_for('admin.preview_email', email_type='rating_request') }}"
+               class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                Preview Email
+            </a>
+        </div>
+    </div>
+
+    <!-- Coming Soon -->
+    <div class="bg-gray-100 rounded-lg p-6 text-center">
+        <p class="text-gray-600">
+            <strong>Coming in Phase 2:</strong> Manual send capability and SendGrid integration
+        </p>
+    </div>
+</div>
+{% endblock %}

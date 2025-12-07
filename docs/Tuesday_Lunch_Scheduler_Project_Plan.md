@@ -478,19 +478,19 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 ### 1.4: Email Templates (Preview Only) (2 hours)
 
-- [ ] **Create email templates (HTML)**
+- [x] **Create email templates (HTML)** ✅
   - Thursday host confirmation email
   - Friday secretary reminder email
   - Monday group announcement email
   - Tuesday rating request email
 
-- [ ] **Build email preview system**
-  - Route to preview each email type
-  - Populate with sample data
-  - Test rendering on mobile/desktop
+- [x] **Build email preview system** ✅
+  - Route to preview each email type (`/admin/emails`)
+  - Populate with sample data from database
+  - Desktop/mobile preview toggle
   - Add "The AI Guy" branding footer
 
-- [ ] **Manual send capability**
+- [ ] **Manual send capability** (deferred to Phase 2 - requires SendGrid)
   - Secretary can trigger send from dashboard
   - Select email type
   - Preview before send
@@ -500,8 +500,8 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - ✓ All 4 email templates render correctly
 - ✓ Templates look professional on mobile
 - ✓ Can preview emails with real data
-- ✓ Can manually send test email via SendGrid
 - ✓ Branding footer displays correctly
+- ⏳ Manual send via SendGrid (Phase 2)
 
 ### 1.5: Basic Member Management (1 hour)
 

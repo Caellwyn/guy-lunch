@@ -17,7 +17,7 @@
 |---------|---------|--------|
 | Render PostgreSQL | Primary database | ✅ Connected |
 | Render Web Service | Flask app hosting | ✅ Deployed |
-| SendGrid | Transactional email | ⏳ Not configured |
+| Brevo | Transactional email (templates + API) | ⏳ Not configured |
 | Google Places API | Location search/details | ⏳ Not configured |
 
 ---
@@ -107,6 +107,8 @@ guy-lunch/
 - `/admin/setup` - Initial setup wizard
 - `/admin/setup/import` - CSV import for members + historical data
 - `/admin/setup/export-template` - Download CSV template
+- `/admin/emails` - Email template hub
+- `/admin/emails/preview/<type>` - Preview email templates with sample data
 
 ### Services Layer
 **Location:** `app/services/`
@@ -126,21 +128,33 @@ guy-lunch/
 ```
 templates/
 ├── base.html              # Base layout with nav
+├── index.html             # Public home page
 ├── admin/
+│   ├── login.html         # Admin login
 │   ├── dashboard.html     # Main secretary view
 │   ├── attendance.html    # Check-off interface
-│   └── members.html       # Member management
+│   ├── members.html       # Member list
+│   ├── add_member.html    # Add member form
+│   ├── edit_member.html   # Edit member form
+│   ├── hosting_queue.html # Full hosting queue
+│   ├── setup.html         # Initial setup wizard
+│   ├── import.html        # CSV import page
+│   ├── emails.html        # Email templates hub
+│   └── email_preview.html # Individual email preview
+├── emails/                # Email templates (Brevo-compatible HTML)
+│   ├── base_email.html        # Base email layout (reference only)
+│   ├── host_confirmation.html # Thursday: Ask host to pick location
+│   ├── secretary_reminder.html # Friday: Reservation reminder or alert
+│   ├── announcement.html       # Monday: Group announcement
+│   └── rating_request.html     # Tuesday: Post-lunch rating request
+│   # Note: Templates use Brevo syntax {{ params.VARIABLE_NAME }}
+│   # Each template includes documentation of required params at bottom
 ├── public/
-│   ├── confirm.html       # Host location confirmation
-│   └── rate.html          # Rating submission
-├── member/
-│   ├── portal.html        # Member dashboard
-│   └── gallery.html       # Photo gallery
-└── emails/
-    ├── host_confirmation.html
-    ├── secretary_reminder.html
-    ├── announcement.html
-    └── rating_request.html
+│   ├── confirm.html       # Host location confirmation (future)
+│   └── rate.html          # Rating submission (future)
+└── member/
+    ├── portal.html        # Member dashboard (future)
+    └── gallery.html       # Photo gallery (future)
 ```
 
 ---
@@ -204,11 +218,15 @@ templates/
 - [x] Guest addition via AJAX on attendance page
 
 ### Next Steps - Phase 1: Remaining
-1. Email templates (preview only)
+1. ~~Email templates (preview only)~~ ✅
+2. Basic member management polish (1.5) - optional refinements
+
+**Phase 1 is essentially complete!** Ready to proceed to Phase 2.
 
 ### Future - Phase 2: Email Automation
-1. SendGrid integration
-2. Scheduled email jobs
+1. Brevo integration (upload templates, configure API)
+2. Scheduled email jobs (cron jobs calling Brevo API)
+3. Manual send capability from admin dashboard
 
 ---
 
@@ -230,4 +248,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 6, 2025 - Phase 0 Complete*
+*Last Updated: December 6, 2025 - Phase 1 Complete (Email Templates Added)*

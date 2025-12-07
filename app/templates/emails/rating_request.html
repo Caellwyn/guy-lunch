@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Today's Lunch - Tuesday Lunch</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+            .mobile-full-width { width: 100% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6;">
+        <tr>
+            <td align="center" style="padding: 24px 0;">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="mobile-full-width" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #2563eb; padding: 24px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">
+                                Tuesday Lunch Group
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 32px 24px;">
+                            <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 20px; font-weight: 600;">
+                                How Was Lunch?
+                            </h2>
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>{{ params.MEMBER_NAME }}</strong>,
+                            </p>
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Thanks for joining us at <strong>{{ params.LOCATION_NAME }}</strong> today!
+                                We'd love your quick feedback.
+                            </p>
+
+                            <!-- Rating Card -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fefce8; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #eab308;">
+                                <tr>
+                                    <td style="padding: 24px; text-align: center;">
+                                        <p style="margin: 0 0 4px 0; color: #854d0e; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Today's Lunch
+                                        </p>
+                                        <h3 style="margin: 0 0 8px 0; color: #713f12; font-size: 20px; font-weight: bold;">
+                                            {{ params.LOCATION_NAME }}
+                                        </h3>
+                                        <p style="margin: 0 0 16px 0; color: #a16207; font-size: 14px;">
+                                            {{ params.LUNCH_DATE }} | Hosted by {{ params.HOST_NAME }}
+                                        </p>
+
+                                        <!-- CTA Button -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                                            <tr>
+                                                <td style="background-color: #eab308; border-radius: 6px;">
+                                                    <a href="{{ params.RATING_URL }}"
+                                                       style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                                                        Rate This Lunch
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0 0 16px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                It only takes 30 seconds! Your rating helps us keep track of the group's favorite spots.
+                            </p>
+
+                            <!-- Quick Stats -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; border-radius: 8px; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 16px;">
+                                        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Today's Stats
+                                        </p>
+                                        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 4px 0; color: #374151; font-size: 14px;">
+                                                    Attendees:
+                                                </td>
+                                                <td style="padding: 4px 0; color: #111827; font-size: 14px; text-align: right; font-weight: 600;">
+                                                    {{ params.ATTENDANCE_COUNT }} people
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 4px 0; color: #374151; font-size: 14px;">
+                                                    {{ params.VISIT_TEXT }}
+                                                </td>
+                                                <td style="padding: 4px 0; color: #111827; font-size: 14px; text-align: right;">
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0; color: #374151; font-size: 16px;">
+                                See you next Tuesday!<br>
+                                <strong>Tuesday Lunch Scheduler</strong>
+                            </p>
+
+                            <!-- Link fallback -->
+                            <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 12px;">
+                                If the button doesn't work, copy and paste this link into your browser:<br>
+                                <a href="{{ params.RATING_URL }}" style="color: #2563eb;">{{ params.RATING_URL }}</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer with AI Guy Logo -->
+                    <tr>
+                        <td style="background-color: #1f2937; padding: 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="text-align: center; padding-bottom: 16px;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                                            <tr>
+                                                <td style="vertical-align: middle; padding-right: 12px;">
+                                                    <img src="{{ params.AI_GUY_LOGO_URL }}" alt="The AI Guy" width="50" height="50" style="display: block;">
+                                                </td>
+                                                <td style="vertical-align: middle; text-align: left;">
+                                                    <p style="margin: 0 0 2px 0; color: #9ca3af; font-size: 11px;">
+                                                        Built by
+                                                    </p>
+                                                    <a href="https://www.theaiguy.rocks" style="color: #facc15; font-size: 16px; font-weight: 700; text-decoration: none;">
+                                                        The AI Guy
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0; color: #6b7280; font-size: 11px;">
+                                            Longview, WA Business Networking Lunch Group
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+<!--
+BREVO TEMPLATE VARIABLES (params object):
+- MEMBER_NAME: Name of the recipient (e.g., "John Smith")
+- LOCATION_NAME: Name of the restaurant (e.g., "Zulo's Board Game Cafe")
+- LUNCH_DATE: Formatted date string (e.g., "December 10, 2024")
+- HOST_NAME: Name of today's host (e.g., "Jane Doe")
+- RATING_URL: Full URL with token for member to submit rating
+- ATTENDANCE_COUNT: Number of people who attended (e.g., "18")
+- VISIT_TEXT: Text about visit count (e.g., "Our 3rd visit here" or "First time visiting!")
+- AI_GUY_LOGO_URL: The AI Guy logo for footer (Ai_guy_transparent.png)
+-->

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guy Lunch Briefing - {{ params.LUNCH_DATE }}</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset and compatibility styles */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+        /* Dot-matrix / typewriter font */
+        .intel-text {
+            font-family: 'Courier New', Courier, monospace !important;
+        }
+        /* Media Queries for Responsiveness */
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+            .mobile-full-width { width: 100% !important; }
+            .headline { font-size: 22px !important; }
+            .location-name { font-size: 24px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #e5e7eb; font-family: Arial, sans-serif;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #e5e7eb;">
+        <tr>
+            <td align="center" style="padding: 24px 0;">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="mobile-full-width" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+
+                    <!-- Header with Background Image -->
+                    <!--[if mso]>
+                    <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:120px;">
+                    <v:fill type="tile" src="{{ params.HEADER_IMAGE_URL }}" color="#1f2937"/>
+                    <v:textbox inset="0,0,0,0">
+                    <![endif]-->
+                    <tr>
+                        <td style="background-image: url('{{ params.HEADER_IMAGE_URL }}'); background-color: #1f2937; background-size: cover; background-position: center; padding: 32px 24px; text-align: center;">
+                            <h1 style="margin: 0; color: #facc15; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                                GUY LUNCH BRIEFING
+                            </h1>
+                        </td>
+                    </tr>
+                    <!--[if mso]>
+                    </v:textbox>
+                    </v:rect>
+                    <![endif]-->
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 32px 24px;">
+                            <!-- Mission Headline -->
+                            <h2 class="headline" style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: 800;">
+                                TARGET ACQUIRED: This Week's Mission
+                            </h2>
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Prepare for deployment this <strong>Tuesday, {{ params.LUNCH_DATE }}</strong>. The objective remains the same: Great food, better company.
+                            </p>
+
+                            <!-- Location Card with Background Image -->
+                            <!--[if mso]>
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:552px;height:180px;">
+                            <v:fill type="tile" src="{{ params.LOCATION_BG_IMAGE_URL }}" color="#1e40af"/>
+                            <v:textbox inset="24px,24px,24px,24px">
+                            <![endif]-->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-image: url('{{ params.LOCATION_BG_IMAGE_URL }}'); background-color: #1e40af; background-size: cover; background-position: center; border-radius: 8px; margin-bottom: 24px; border: 3px solid #facc15;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <p style="margin: 0 0 4px 0; color: #facc15; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                                            &gt;&gt; Mission Location
+                                        </p>
+                                        <h3 class="location-name" style="margin: 0 0 16px 0; color: #ffffff; font-size: 30px; font-weight: 800; line-height: 1.1; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                                            {{ params.LOCATION_NAME }}
+                                        </h3>
+
+                                        <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                                            {{ params.LOCATION_ADDRESS }}
+                                        </p>
+
+                                        <p style="margin: 16px 0 0 0;">
+                                            <a href="{{ params.GOOGLE_MAPS_URL }}"
+                                               style="display: inline-block; padding: 10px 18px; background-color: #facc15; color: #1f2937; font-size: 14px; font-weight: 700; border-radius: 4px; text-decoration: none; text-transform: uppercase;">
+                                                LAUNCH MAPS
+                                            </a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if mso]>
+                            </v:textbox>
+                            </v:rect>
+                            <![endif]-->
+
+                            <!-- Intel Report with Background Image (includes Time, Host, and Location Info) -->
+                            <!--[if mso]>
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:552px;height:280px;">
+                            <v:fill type="tile" src="{{ params.INTEL_BG_IMAGE_URL }}" color="#f3f4f6"/>
+                            <v:textbox inset="20px,20px,20px,20px">
+                            <![endif]-->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-image: url('{{ params.INTEL_BG_IMAGE_URL }}'); background-color: #f3f4f6; background-size: cover; background-position: center; border-radius: 8px; margin-bottom: 24px; border: 1px solid #d1d5db;">
+                                <tr>
+                                    <td style="padding: 20px; background-color: rgba(243, 244, 246, 0.92);">
+                                        <p style="margin: 0 0 12px 0; color: #1f2937; font-size: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid #facc15; padding-bottom: 8px; font-family: 'Courier New', Courier, monospace; letter-spacing: 2px;">
+                                            === INTEL REPORT ===
+                                        </p>
+
+                                        <!-- Time and Host (Priority Info) -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 12px;">
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px dashed #9ca3af;">
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #dc2626; font-size: 13px; font-weight: 700;">START TIME:</span>
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #111827; font-size: 13px; float: right;">11:30 HOURS</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px dashed #9ca3af;">
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #047857; font-size: 13px; font-weight: 700;">TEAM LEADER:</span>
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #111827; font-size: 13px; float: right;">{{ params.HOST_NAME }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px dashed #9ca3af;">
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #1e40af; font-size: 13px; font-weight: 700;">CUISINE:</span>
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #111827; font-size: 13px; float: right;">{{ params.LOCATION_CUISINE }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px dashed #9ca3af;">
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #1e40af; font-size: 13px; font-weight: 700;">GROUP RATING:</span>
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #111827; font-size: 13px; float: right;">{{ params.LOCATION_RATING }}/5</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; border-bottom: 1px dashed #9ca3af;">
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #1e40af; font-size: 13px; font-weight: 700;">PRICE POINT:</span>
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #111827; font-size: 13px; float: right;">{{ params.LOCATION_PRICE }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #1e40af; font-size: 13px; font-weight: 700;">LAST ENGAGEMENT:</span>
+                                                    <span class="intel-text" style="font-family: 'Courier New', Courier, monospace; color: #111827; font-size: 13px; float: right;">{{ params.LAST_VISITED }}</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <p class="intel-text" style="margin: 0; font-family: 'Courier New', Courier, monospace; color: #6b7280; font-size: 11px; text-align: center;">
+                                            [ END TRANSMISSION ]
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--[if mso]>
+                            </v:textbox>
+                            </v:rect>
+                            <![endif]-->
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Mission accepted! See you in the field Tuesday.
+                            </p>
+
+                            <p style="margin: 0; color: #111827; font-size: 16px;">
+                                Cheers,<br>
+                                <strong>The Guy Lunch Command Center</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer with AI Guy Logo -->
+                    <tr>
+                        <td style="background-color: #1f2937; padding: 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0 0 16px 0; color: #d1d5db; font-size: 14px;">
+                                            A production of <strong style="color: #facc15;">The Guy Lunch Command Center</strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: center; padding-bottom: 16px;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                                            <tr>
+                                                <td style="vertical-align: middle; padding-right: 12px;">
+                                                    <img src="{{ params.AI_GUY_LOGO_URL }}" alt="The AI Guy" width="40" height="40" style="display: block; border-radius: 50%;">
+                                                </td>
+                                                <td style="vertical-align: middle;">
+                                                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                                        Built by
+                                                    </p>
+                                                    <a href="https://theaiguy.com" style="color: #facc15; font-size: 14px; font-weight: 700; text-decoration: none;">
+                                                        The AI Guy
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0; color: #6b7280; font-size: 11px;">
+                                            Longview, WA Business Networking Lunch Group
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+<!--
+BREVO TEMPLATE VARIABLES (params object):
+
+Required variables:
+- LUNCH_DATE: Formatted date string (e.g., "December 10, 2024")
+- LOCATION_NAME: Name of the restaurant (e.g., "The Local Pub & Grill")
+- LOCATION_ADDRESS: Full address (e.g., "456 Industrial Way, Longview, WA 98632")
+- GOOGLE_MAPS_URL: Link to Google Maps for the location
+- HOST_NAME: Name of this week's host/team leader (e.g., "Richard Smith")
+- LOCATION_CUISINE: Type of food (e.g., "Classic American Pub Fare")
+- LOCATION_RATING: Group's average rating (e.g., "4.6")
+- LOCATION_PRICE: Price indicator (e.g., "$$ (Mid-Range)")
+- LAST_VISITED: When we last visited (e.g., "June 25, 2024" or "First Engagement!")
+
+Image URLs (must be publicly hosted):
+- HEADER_IMAGE_URL: Background image for header (e.g., announcment_header.jpg)
+- LOCATION_BG_IMAGE_URL: Background for location card (e.g., announcment_Location_backgound.jpg)
+- INTEL_BG_IMAGE_URL: Background for intel report (e.g., announcement_intel_report_background.jpg)
+- AI_GUY_LOGO_URL: The AI Guy logo for footer (e.g., Ai_guy_transparent.png)
+
+Note: Images must be hosted on a public URL. Options:
+1. Host as static files on your Render app
+2. Upload to Brevo's media library
+3. Use a CDN like Cloudinary or AWS S3
+-->

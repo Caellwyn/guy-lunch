@@ -49,11 +49,18 @@
             <div class="text-gray-500 text-sm">View full queue</div>
         </a>
         
-        <a href="{{ url_for('admin.setup') }}" 
+        <a href="{{ url_for('admin.setup') }}"
            class="bg-gray-100 text-gray-800 rounded-lg p-6 text-center hover:bg-gray-200 transition-colors">
             <div class="text-3xl mb-2">⚙️</div>
             <div class="text-lg font-semibold">Setup & Import</div>
             <div class="text-gray-500 text-sm">Import CSV data</div>
+        </a>
+
+        <a href="{{ url_for('admin.emails') }}"
+           class="bg-gray-100 text-gray-800 rounded-lg p-6 text-center hover:bg-gray-200 transition-colors">
+            <div class="text-3xl mb-2">📧</div>
+            <div class="text-lg font-semibold">Email Templates</div>
+            <div class="text-gray-500 text-sm">Preview & manage emails</div>
         </a>
     </div>
     
