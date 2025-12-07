@@ -24,6 +24,9 @@ def create_app(config_name=None):
     # Admin password for simple auth (MVP)
     app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'lunch-admin-2024')
     
+    # App URL for magic links (defaults to localhost for dev, must be set in production)
+    app.config['APP_URL'] = os.environ.get('APP_URL', 'http://localhost:5000')
+    
     # Fix for postgres:// vs postgresql:// (some providers use older postgres:// format)
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace(

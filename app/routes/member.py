@@ -17,12 +17,30 @@ member_bp = Blueprint('member', __name__, url_prefix='/member')
 
 # ============== AUTHENTICATION ==============
 
+def is_local_development():
+    """Check if running in local development mode."""
+    return current_app.debug or current_app.config.get('FLASK_ENV') == 'development'
+
+
 def member_required(f):
-    """Decorator to require member authentication."""
+    """Decorator to require member authentication.
+    
+    In local development (debug mode), auto-logs in as first member if not authenticated.
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('member_id'):
-            return redirect(url_for('member.login', next=request.url))
+            # In local dev, auto-login as first member
+            if is_local_development():
+                member = Member.query.first()
+                if member:
+                    session['member_id'] = member.id
+                    session['member_name'] = member.name
+                    session.permanent = True
+                else:
+                    return redirect(url_for('member.login', next=request.url))
+            else:
+                return redirect(url_for('member.login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 
