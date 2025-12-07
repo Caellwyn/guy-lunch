@@ -6,6 +6,32 @@
     <title>{% block title %}Tuesday Lunch Scheduler{% endblock %}</title>
     <!-- Tailwind CSS via CDN (will switch to build later) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        stadium: {
+                            blue: '#1e3a8a',  /* Deep Navy */
+                            gold: '#fbbf24',  /* Amber 400 */
+                            green: '#2d5a27', /* Stadium Green */
+                            red: '#c41e3a',   /* Jersey Red */
+                            white: '#f0f0f0', /* Chalk White */
+                            dirt: '#8b5a2b',  /* Dugout Dirt */
+                            metal: '#8c8c8c', /* Metal Gray */
+                        }
+                    },
+                    fontFamily: {
+                        stadium: ['"Roboto Condensed"', 'sans-serif'],
+                        jersey: ['"Graduate"', 'serif'],
+                        scoreboard: ['"Share Tech Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom Stadium Theme -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/stadium-theme.css') }}">
     {% block head %}{% endblock %}
@@ -38,7 +64,13 @@
     
     <footer class="bg-gray-800 text-gray-400">
         <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm">
-            <p>Built by <strong>The AI Guy</strong> 🤖</p>
+            <div class="flex items-center justify-center space-x-2">
+                <span>Built by</span>
+                <a href="https://caellwynai.com" target="_blank" class="flex items-center font-bold hover:text-white transition-colors">
+                    <img src="{{ url_for('static', filename='emails/Ai_guy_transparent.png') }}" alt="The AI Guy" class="h-8 w-8 mr-1">
+                    The AI Guy
+                </a>
+            </div>
         </div>
     </footer>
     

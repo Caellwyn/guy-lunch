@@ -23,5 +23,9 @@ class Lunch(db.Model):
     ratings = db.relationship('Rating', backref='lunch', lazy='dynamic', cascade='all, delete-orphan')
     photos = db.relationship('Photo', backref='lunch', lazy='dynamic')
     
+    @property
+    def restaurant(self):
+        return self.location.name if self.location else "TBD"
+
     def __repr__(self):
         return f'<Lunch {self.date}>'
