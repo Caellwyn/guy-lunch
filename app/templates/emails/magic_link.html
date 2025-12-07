@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Login Link - Tuesday Lunch</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+            .mobile-full-width { width: 100% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6;">
+        <tr>
+            <td align="center" style="padding: 24px 0;">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="mobile-full-width" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #2563eb; padding: 24px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">
+                                Tuesday Lunch Group
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 32px 24px;">
+                            <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 20px; font-weight: 600;">
+                                Your Login Link
+                            </h2>
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>{{ params.MEMBER_NAME }}</strong>,
+                            </p>
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Click the button below to log in to the Member Portal. This link expires in {{ params.EXPIRES_MINUTES }} minutes.
+                            </p>
+
+                            <!-- Action Box -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #eff6ff; border-radius: 8px; margin-bottom: 24px;">
+                                <tr>
+                                    <td style="padding: 24px; text-align: center;">
+                                        <!-- CTA Button -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                                            <tr>
+                                                <td style="background-color: #2563eb; border-radius: 6px;">
+                                                    <a href="{{ params.MAGIC_LINK_URL }}"
+                                                       style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                                                        Log In to Member Portal
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                                This is a one-time link. After you click it, you'll stay logged in for 30 days.
+                            </p>
+
+                            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                                If you didn't request this login link, you can safely ignore this email.
+                            </p>
+
+                            <!-- Link fallback -->
+                            <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 12px;">
+                                If the button doesn't work, copy and paste this link into your browser:<br>
+                                <a href="{{ params.MAGIC_LINK_URL }}" style="color: #2563eb; word-break: break-all;">{{ params.MAGIC_LINK_URL }}</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer with AI Guy Logo -->
+                    <tr>
+                        <td style="background-color: #1f2937; padding: 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="text-align: center; padding-bottom: 16px;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                                            <tr>
+                                                <td style="vertical-align: middle; padding-right: 12px;">
+                                                    <img src="{{ params.AI_GUY_LOGO_URL }}" alt="The AI Guy" width="50" height="50" style="display: block;">
+                                                </td>
+                                                <td style="vertical-align: middle; text-align: left;">
+                                                    <p style="margin: 0 0 2px 0; color: #9ca3af; font-size: 11px;">
+                                                        Built by
+                                                    </p>
+                                                    <a href="https://www.theaiguy.rocks" style="color: #facc15; font-size: 16px; font-weight: 700; text-decoration: none;">
+                                                        The AI Guy
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0; color: #6b7280; font-size: 11px;">
+                                            Longview, WA Business Networking Lunch Group
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+<!--
+BREVO TEMPLATE VARIABLES (params object):
+- MEMBER_NAME: Name of the member (e.g., "John Smith")
+- MAGIC_LINK_URL: Full URL with token for member to log in
+- EXPIRES_MINUTES: How long the link is valid (e.g., "15")
+- AI_GUY_LOGO_URL: The AI Guy logo for footer
+-->

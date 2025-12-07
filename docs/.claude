@@ -3,9 +3,9 @@
 ## Project Overview
 Web application automating weekly lunch coordination for a 25-member business networking group.
 
-**CRITICAL** before starting, read the following documents for onboarding.
-See `docs/Tuesday_Lunch_Scheduler_Project_Plan.md` for full requirements and phases.
-See `docs/technical_guide.md` for current app architecture
+**CRITICAL ONBOARDING** before starting, read the following documents for onboarding.
+1.  `docs/Tuesday_Lunch_Scheduler_Project_Plan.md` for full requirements and phases.
+2.  `docs/technical_guide.md` for current app architecture
 
 ---
 
@@ -98,7 +98,24 @@ PLAN → CODE → TEST → DOCUMENT → COMMIT
 - ✅ Settings page with secretary selection (`/admin/settings`)
 - ⏳ Railway cron jobs (pending - currently manual-only)
 
-**Ready for Phase 3 - Location Management & Ratings**
+**Phase 3 - Location Management & Ratings** ✅ COMPLETE
+- ✅ Google Places integration for location search
+- ✅ One-click rating from email (star links)
+- ✅ Location management dashboard
+
+**Phase 4 - Member Portal** 🚧 IN PROGRESS
+- ✅ Magic link authentication (email login, 30-day sessions)
+- ✅ Member dashboard with baseball-themed hosting lineup
+  - At Bat, On Deck, In the Hole, Dugout positions
+  - Estimated hosting dates
+  - Attendance history
+- ✅ Full batting order page (`/member/lineup`)
+- ✅ Photo gallery placeholder (`/member/gallery`)
+
+**NEXT TODO: Make the portal look WAY cooler!**
+- Real baseball imagery and backgrounds
+- Custom graphics for lineup positions
+- Fun, impressive styling to wow the members
 
 See `Tuesday_Lunch_Scheduler_Project_Plan.md` for full progress tracking.
 

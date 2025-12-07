@@ -16,10 +16,14 @@
                     <a href="/" class="text-xl font-bold">🍽️ Tuesday Lunch</a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    {% if session.get('admin_authenticated') %}
-                        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-blue-200">Dashboard</a>
+                    {% if session.get('member_id') %}
+                        <a href="{{ url_for('member.dashboard') }}" class="hover:text-blue-200">My Portal</a>
+                        <a href="{{ url_for('member.logout') }}" class="hover:text-blue-200 text-sm">Logout</a>
                     {% else %}
-                        <a href="{{ url_for('admin.login') }}" class="hover:text-blue-200 text-sm">Admin</a>
+                        <a href="{{ url_for('member.login') }}" class="hover:text-blue-200">Member Login</a>
+                    {% endif %}
+                    {% if session.get('admin_authenticated') %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-blue-200 bg-blue-700 px-3 py-1 rounded">Admin</a>
                     {% endif %}
                 </div>
             </div>

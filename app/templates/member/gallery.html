@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Photo Gallery - Tuesday Lunch{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Back Link -->
+    <div class="mb-4">
+        <a href="{{ url_for('member.dashboard') }}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Coming Soon Card -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-8 text-center">
+            <div class="text-6xl mb-4">&#128247;</div>
+            <h1 class="text-2xl font-bold text-white">Photo Gallery</h1>
+            <p class="text-purple-100 mt-2">Coming Soon!</p>
+        </div>
+
+        <div class="p-8 text-center">
+            <p class="text-gray-600 text-lg mb-4">
+                The photo gallery is under construction.
+            </p>
+            <p class="text-gray-500">
+                Soon you'll be able to:
+            </p>
+            <ul class="mt-4 space-y-2 text-gray-600">
+                <li class="flex items-center justify-center gap-2">
+                    <span class="text-green-500">&#10003;</span>
+                    Upload photos from Tuesday lunches
+                </li>
+                <li class="flex items-center justify-center gap-2">
+                    <span class="text-green-500">&#10003;</span>
+                    Tag members in photos
+                </li>
+                <li class="flex items-center justify-center gap-2">
+                    <span class="text-green-500">&#10003;</span>
+                    Browse photos by date or location
+                </li>
+                <li class="flex items-center justify-center gap-2">
+                    <span class="text-green-500">&#10003;</span>
+                    Download and share memories
+                </li>
+            </ul>
+
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-500">
+                    Have photos from past lunches? Hold onto them!
+                    We'll let you know when the gallery is ready.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -96,6 +96,7 @@ guy-lunch/
 | main | `main.py` | Public routes: home, health, host confirmation, ratings |
 | admin | `admin.py` | Secretary dashboard, attendance tracking, setup/import |
 | api | `api.py` | JSON endpoints for Places search, etc. |
+| member | `member.py` | Member portal: auth, dashboard, lineup, history |
 
 **Public Routes (Implemented):**
 - `/` - Home page
@@ -107,6 +108,15 @@ guy-lunch/
 - `/api/places/search?q=<query>` - Search restaurants via Google Places
 - `/api/places/<place_id>` - Get full details for a place
 - `/api/places/status` - Check if Google Places API is configured
+
+**Member Portal Routes (Implemented):**
+- `/member/login` - Magic link login (enter email, receive link)
+- `/member/auth/<token>` - Validate magic link and log in
+- `/member/logout` - Log out member
+- `/member/` - Member dashboard with baseball-themed hosting lineup
+- `/member/lineup` - Full batting order with estimated hosting dates
+- `/member/history` - Member's lunch attendance history
+- `/member/gallery` - Photo gallery (placeholder for Phase 4.3)
 
 **Admin Routes (Implemented):**
 - `/admin/login` - Password authentication
@@ -162,15 +172,22 @@ templates/
 │   ├── host_confirmation.html # Thursday: Ask host to pick location
 │   ├── secretary_reminder.html # Friday: Reservation reminder or alert
 │   ├── announcement.html       # Monday: Group announcement
-│   └── rating_request.html     # Tuesday: Post-lunch rating request
+│   ├── rating_request.html     # Tuesday: Post-lunch rating request
+│   └── magic_link.html        # Magic link login email
 │   # Note: Templates use Brevo syntax {{ params.VARIABLE_NAME }}
 │   # Each template includes documentation of required params at bottom
 ├── public/
-│   ├── confirm.html       # Host location confirmation (future)
-│   └── rate.html          # Rating submission (future)
+│   ├── confirm_host.html       # Host location confirmation
+│   ├── confirmation_success.html
+│   ├── already_confirmed.html
+│   ├── invalid_token.html
+│   └── rating_thanks.html      # Rating submission thank-you
 └── member/
-    ├── portal.html        # Member dashboard (future)
-    └── gallery.html       # Photo gallery (future)
+    ├── login.html         # Magic link login form
+    ├── dashboard.html     # Member dashboard with baseball lineup
+    ├── lineup.html        # Full batting order
+    ├── history.html       # Attendance history
+    └── gallery.html       # Photo gallery (placeholder)
 ```
 
 ---
@@ -278,6 +295,30 @@ templates/
   - Prevents duplicate submissions
   - Simple thank-you page confirmation
 
+### In Progress - Phase 4: Member Portal & Authentication
+- [x] Magic link authentication system
+  - Member enters email → receives login link → clicks → logged in
+  - Token stored on Member model (`magic_link_token`, `magic_link_expires`)
+  - 15-minute token expiry, single-use
+  - 30-day session persistence via Flask cookies
+- [x] Member portal dashboard (`/member/`)
+  - Baseball-themed hosting lineup (At Bat, On Deck, In the Hole, Dugout)
+  - Estimated hosting date prediction
+  - Stats: lunches attended, times hosted, queue position
+  - Upcoming lunch info
+  - Recent attendance history preview
+- [x] Full batting order page (`/member/lineup`)
+- [x] Lunch attendance history (`/member/history`)
+- [x] Photo gallery placeholder (`/member/gallery`)
+- [x] Updated navbar with Member Login / My Portal links
+
+### Next Up - Phase 4.2: Member Portal Visual Polish
+- [ ] **Make the member portal look WAY cooler!**
+  - Add real baseball imagery and backgrounds
+  - Custom graphics for At Bat, On Deck, In the Hole positions
+  - Fun baseball-themed styling throughout
+  - Make it impressive and engaging for members
+
 ---
 
 ## Local Development Commands
@@ -298,4 +339,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 6, 2025 - Phase 3 Complete (Locations & Ratings)*
+*Last Updated: December 7, 2025 - Phase 4 Started (Member Portal with Baseball Lineup)*

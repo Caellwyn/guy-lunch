@@ -5,7 +5,7 @@ from app import db
 class Member(db.Model):
     """Lunch group member."""
     __tablename__ = 'members'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -16,6 +16,10 @@ class Member(db.Model):
     first_attended = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Magic link authentication fields
+    magic_link_token = db.Column(db.String(64), unique=True, nullable=True)
+    magic_link_expires = db.Column(db.DateTime, nullable=True)
     
     # Relationships
     hosted_lunches = db.relationship('Lunch', backref='host', lazy='dynamic')

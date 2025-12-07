@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Batting Order - Tuesday Lunch{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Back Link -->
+    <div class="mb-4">
+        <a href="{{ url_for('member.dashboard') }}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-700 to-green-800 rounded-t-lg px-6 py-6 text-center">
+        <div class="text-4xl mb-2">&#9918;</div>
+        <h1 class="text-2xl font-bold text-white">The Batting Order</h1>
+        <p class="text-green-100 mt-1">Hosting lineup for Tuesday Lunch</p>
+    </div>
+
+    <!-- Lineup List -->
+    <div class="bg-white rounded-b-lg shadow-lg overflow-hidden">
+        <div class="divide-y divide-gray-200">
+            {% for item in lineup_with_dates %}
+            <div class="p-4 {% if item.member.id == member.id %}bg-blue-50 border-l-4 border-blue-500{% endif %}
+                        {% if item.status == 'at_bat' and item.member.id != member.id %}bg-green-50{% endif %}
+                        {% if item.status == 'on_deck' and item.member.id != member.id %}bg-yellow-50{% endif %}">
+                <div class="flex items-center gap-4">
+                    <!-- Position Badge -->
+                    <div class="flex-shrink-0 w-24 text-center">
+                        {% if item.status == 'at_bat' %}
+                            <span class="inline-block bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                At Bat
+                            </span>
+                        {% elif item.status == 'on_deck' %}
+                            <span class="inline-block bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                On Deck
+                            </span>
+                        {% elif item.status == 'in_hole' %}
+                            <span class="inline-block bg-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                In Hole
+                            </span>
+                        {% else %}
+                            <span class="inline-block bg-gray-400 text-white text-xs font-bold w-8 h-8 rounded-full leading-8">
+                                {{ item.position }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Member Info -->
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-900 {% if item.member.id == member.id %}text-blue-700{% endif %}">
+                            {{ item.member.name }}
+                            {% if item.member.id == member.id %}
+                                <span class="text-blue-600 font-normal">(You!)</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            {{ item.estimated_date.strftime('%B %d, %Y') }}
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            {{ item.member.attendance_since_hosting }} lunches since last hosted
+                            {% if item.member.total_hosting_count %}
+                                &bull; Hosted {{ item.member.total_hosting_count }} time{% if item.member.total_hosting_count != 1 %}s{% endif %} total
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Icon -->
+                    <div class="text-2xl">
+                        {% if item.status == 'at_bat' %}
+                            &#127951;
+                        {% elif item.status == 'on_deck' %}
+                            &#128170;
+                        {% elif item.status == 'in_hole' %}
+                            &#128064;
+                        {% else %}
+                            &#127971;
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-6 bg-white rounded-lg shadow p-4">
+        <h3 class="font-semibold text-gray-700 mb-3">How It Works</h3>
+        <div class="space-y-2 text-sm text-gray-600">
+            <div class="flex items-center gap-2">
+                <span class="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">At Bat</span>
+                <span>Hosting this Tuesday</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-block bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">On Deck</span>
+                <span>Hosting next week (or pinch-hitting if needed)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-block bg-orange-400 text-white text-xs font-bold px-2 py-0.5 rounded-full">In Hole</span>
+                <span>Third up in the rotation</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-block bg-gray-400 text-white text-xs font-bold w-6 h-6 rounded-full text-center leading-6">#</span>
+                <span>Waiting in the dugout</span>
+            </div>
+        </div>
+        <p class="mt-4 text-xs text-gray-500">
+            The order is based on how many lunches you've attended since your last time hosting.
+            More lunches = closer to the front of the line!
+        </p>
+    </div>
+</div>
+{% endblock %}
