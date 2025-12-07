@@ -747,3 +747,102 @@ def set_secretary():
 
     return redirect(url_for('admin.settings'))
 
+
+# ============== LOCATIONS MANAGEMENT ==============
+
+@admin_bp.route('/locations')
+@admin_required
+def locations():
+    """Location management page."""
+    all_locations = Location.query.order_by(Location.name).all()
+    return render_template('admin/locations.html', locations=all_locations)
+
+
+@admin_bp.route('/locations/add', methods=['POST'])
+@admin_required
+def add_location():
+    """Add a new location."""
+    name = request.form.get('name', '').strip()
+    address = request.form.get('address', '').strip()
+    phone = request.form.get('phone', '').strip()
+    google_place_id = request.form.get('google_place_id', '').strip()
+    google_rating = request.form.get('google_rating', '').strip()
+    price_level = request.form.get('price_level', '').strip()
+    cuisine_type = request.form.get('cuisine_type', '').strip()
+    group_friendly = request.form.get('group_friendly') == 'on'
+
+    if not name:
+        flash('Restaurant name is required.', 'error')
+        return redirect(url_for('admin.locations'))
+
+    # Check if location with this Google Place ID already exists
+    if google_place_id:
+        existing = Location.query.filter_by(google_place_id=google_place_id).first()
+        if existing:
+            flash(f'{existing.name} already exists in the database.', 'error')
+            return redirect(url_for('admin.locations'))
+
+    # Create new location
+    location = Location(
+        name=name,
+        address=address or None,
+        phone=phone or None,
+        google_place_id=google_place_id or None,
+        google_rating=float(google_rating) if google_rating else None,
+        price_level=int(price_level) if price_level else None,
+        cuisine_type=cuisine_type or None,
+        group_friendly=group_friendly,
+        visit_count=0
+    )
+    db.session.add(location)
+    db.session.commit()
+
+    flash(f'Added {location.name}!', 'success')
+    return redirect(url_for('admin.locations'))
+
+
+@admin_bp.route('/locations/<int:location_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_location(location_id):
+    """Edit a location."""
+    location = Location.query.get_or_404(location_id)
+
+    if request.method == 'POST':
+        location.name = request.form.get('name', location.name).strip()
+        location.address = request.form.get('address', '').strip() or None
+        location.phone = request.form.get('phone', '').strip() or None
+        location.cuisine_type = request.form.get('cuisine_type', '').strip() or None
+        location.group_friendly = request.form.get('group_friendly') == 'on'
+
+        price_level = request.form.get('price_level', '').strip()
+        location.price_level = int(price_level) if price_level else None
+
+        google_rating = request.form.get('google_rating', '').strip()
+        location.google_rating = float(google_rating) if google_rating else None
+
+        avg_group_rating = request.form.get('avg_group_rating', '').strip()
+        location.avg_group_rating = float(avg_group_rating) if avg_group_rating else None
+
+        db.session.commit()
+        flash(f'Updated {location.name}.', 'success')
+        return redirect(url_for('admin.locations'))
+
+    return render_template('admin/edit_location.html', location=location)
+
+
+@admin_bp.route('/locations/<int:location_id>/delete', methods=['POST'])
+@admin_required
+def delete_location(location_id):
+    """Delete a location."""
+    location = Location.query.get_or_404(location_id)
+    name = location.name
+
+    # Clear references in lunches
+    Lunch.query.filter_by(location_id=location_id).update({'location_id': None})
+
+    db.session.delete(location)
+    db.session.commit()
+
+    flash(f'Deleted {name}.', 'success')
+    return redirect(url_for('admin.locations'))
+
