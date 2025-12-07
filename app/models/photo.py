@@ -18,6 +18,11 @@ class Photo(db.Model):
     # Relationships
     tags = db.relationship('PhotoTag', backref='photo', lazy='dynamic', cascade='all, delete-orphan')
     
+    @property
+    def signed_url(self):
+        from app.services.storage_service import storage_service
+        return storage_service.get_presigned_url(self.file_url)
+
     def __repr__(self):
         return f'<Photo {self.id} lunch={self.lunch_id}>'
 

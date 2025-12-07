@@ -1,5 +1,6 @@
 # Business logic services
 from app.services.email_service import email_service
+from app.services.storage_service import storage_service
 from app.services.email_jobs import (
     run_email_job,
     send_host_confirmation_email,

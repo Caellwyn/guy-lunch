@@ -1,60 +1,221 @@
 {% extends "base.html" %}
 
-{% block title %}Photo Gallery - Tuesday Lunch{% endblock %}
-
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <!-- Back Link -->
-    <div class="mb-4">
-        <a href="{{ url_for('member.dashboard') }}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back to Dashboard
-        </a>
-    </div>
-
-    <!-- Coming Soon Card -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-8 text-center">
-            <div class="text-6xl mb-4">&#128247;</div>
-            <h1 class="text-2xl font-bold text-white">Photo Gallery</h1>
-            <p class="text-purple-100 mt-2">Coming Soon!</p>
+<div class="min-h-screen bg-stadium-grass bg-cover bg-fixed font-stadium text-stadium-white">
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header Section -->
+        <div class="relative flex flex-col md:flex-row justify-between items-center mb-8 p-6 rounded-lg border-4 border-stadium-gold shadow-lg overflow-hidden">
+            <!-- Background with overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="{{ url_for('static', filename='img/metal_texture.jpg') }}" class="w-full h-full object-cover" alt="Background">
+                <div class="absolute inset-0 bg-black/50"></div>
+            </div>
+            
+            <!-- Content -->
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-center w-full">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <h1 class="text-4xl font-bold text-stadium-gold drop-shadow-md uppercase tracking-wider">
+                        <i class="fas fa-camera-retro mr-3"></i>Team Photos
+                    </h1>
+                    <p class="text-stadium-white/80 mt-2 font-sans">Capture the highlights of the season</p>
+                </div>
+                
+                <!-- Upload Button -->
+                <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" 
+                        class="bg-stadium-gold hover:bg-yellow-500 text-stadium-blue font-bold py-3 px-6 rounded-full transform hover:scale-105 transition-all duration-300 shadow-lg border-2 border-white flex items-center">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                    Upload Photo
+                </button>
+            </div>
         </div>
 
-        <div class="p-8 text-center">
-            <p class="text-gray-600 text-lg mb-4">
-                The photo gallery is under construction.
-            </p>
-            <p class="text-gray-500">
-                Soon you'll be able to:
-            </p>
-            <ul class="mt-4 space-y-2 text-gray-600">
-                <li class="flex items-center justify-center gap-2">
-                    <span class="text-green-500">&#10003;</span>
-                    Upload photos from Tuesday lunches
-                </li>
-                <li class="flex items-center justify-center gap-2">
-                    <span class="text-green-500">&#10003;</span>
-                    Tag members in photos
-                </li>
-                <li class="flex items-center justify-center gap-2">
-                    <span class="text-green-500">&#10003;</span>
-                    Browse photos by date or location
-                </li>
-                <li class="flex items-center justify-center gap-2">
-                    <span class="text-green-500">&#10003;</span>
-                    Download and share memories
-                </li>
-            </ul>
+        <div class="flex flex-col lg:flex-row gap-8">
+            
+            <!-- Sidebar: Game Log (Lunch Dates) -->
+            <div class="w-full lg:w-1/4">
+                <div class="bg-white/95 rounded-lg shadow-xl overflow-hidden border-2 border-stadium-blue">
+                    <div class="bg-stadium-blue p-4 border-b-4 border-stadium-gold">
+                        <h2 class="text-xl font-bold text-white uppercase tracking-wide flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> Game Log
+                        </h2>
+                    </div>
+                    <div class="p-2 max-h-[600px] overflow-y-auto custom-scrollbar">
+                        <a href="{{ url_for('gallery.index') }}" 
+                           class="block p-3 mb-2 rounded hover:bg-gray-100 transition-colors border-l-4 {% if not current_lunch_id %}border-stadium-gold bg-blue-50{% else %}border-transparent{% endif %}">
+                            <div class="font-bold text-stadium-blue">All Seasons</div>
+                            <div class="text-xs text-gray-500">Show all photos</div>
+                        </a>
+                        
+                        {% for lunch in lunches %}
+                        <a href="{{ url_for('gallery.index', lunch_id=lunch.id) }}" 
+                           class="block p-3 mb-2 rounded hover:bg-gray-100 transition-colors border-l-4 {% if current_lunch_id == lunch.id %}border-stadium-gold bg-blue-50{% else %}border-transparent{% endif %}">
+                            <div class="font-bold text-gray-800">{{ lunch.date.strftime('%b %d, %Y') }}</div>
+                            <div class="text-xs text-gray-600 flex justify-between items-center mt-1">
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>{{ lunch.restaurant }}</span>
+                                <span class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-[10px]">{{ lunch.photos.count() }}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
 
-            <div class="mt-8 p-4 bg-gray-50 rounded-lg">
-                <p class="text-sm text-gray-500">
-                    Have photos from past lunches? Hold onto them!
-                    We'll let you know when the gallery is ready.
-                </p>
+            <!-- Main Gallery Grid -->
+            <div class="w-full lg:w-3/4">
+                {% if photos %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {% for photo in photos %}
+                        <div class="group relative bg-white p-3 rounded-lg shadow-xl transform hover:-rotate-1 transition-all duration-300">
+                            <!-- Photo Frame -->
+                            <div class="relative aspect-w-4 aspect-h-3 overflow-hidden rounded border border-gray-200 bg-gray-100">
+                                <img src="{{ photo.signed_url }}" 
+                                     alt="Lunch photo" 
+                                     class="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-500 cursor-pointer"
+                                     onclick="openLightbox('{{ photo.signed_url }}', '{{ photo.uploader.name }}', '{{ photo.lunch.date.strftime('%B %d, %Y') }}', '{{ photo.lunch.restaurant }}')">
+                                
+                                <!-- Overlay Info -->
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                                    <p class="text-white font-bold text-sm"><i class="fas fa-user mr-2"></i>{{ photo.uploader.name }}</p>
+                                    <p class="text-gray-300 text-xs"><i class="fas fa-clock mr-2"></i>{{ photo.created_at.strftime('%I:%M %p') }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Tape Effect -->
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-24 h-8 bg-yellow-100/80 rotate-2 shadow-sm z-10"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="bg-white/90 rounded-lg p-12 text-center shadow-xl border-2 border-dashed border-gray-400">
+                        <div class="text-6xl text-gray-300 mb-4">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-600 mb-2">No Photos Found</h3>
+                        <p class="text-gray-500 mb-6">Be the first to snap a memory for this lunch!</p>
+                        <button onclick="document.getElementById('uploadModal').classList.remove('hidden')" 
+                                class="bg-stadium-blue hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-full transition-colors">
+                            Upload Now
+                        </button>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 overflow-hidden transform transition-all">
+        <div class="bg-stadium-blue p-4 flex justify-between items-center border-b-4 border-stadium-gold">
+            <h3 class="text-xl font-bold text-white uppercase"><i class="fas fa-upload mr-2"></i>Upload Photo</h3>
+            <button onclick="document.getElementById('uploadModal').classList.add('hidden')" class="text-white hover:text-stadium-gold transition-colors">
+                <i class="fas fa-times fa-lg"></i>
+            </button>
+        </div>
+        
+        <form action="{{ url_for('gallery.upload') }}" method="POST" enctype="multipart/form-data" class="p-6">
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="photo">
+                    Select Image
+                </label>
+                <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-stadium-blue transition-colors bg-gray-50">
+                    <input type="file" name="photo" id="photo" accept="image/*" required
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           onchange="updateFileName(this)">
+                    <div id="uploadPlaceholder">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-500">Click or drag file here</p>
+                    </div>
+                    <p id="fileName" class="text-sm text-stadium-blue font-bold hidden mt-2"></p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="lunch_id">
+                    Select Lunch Date
+                </label>
+                <div class="relative">
+                    <select name="lunch_id" id="lunch_id" required
+                            class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-stadium-blue focus:ring-1 focus:ring-stadium-blue">
+                        {% for lunch in lunches %}
+                        <option value="{{ lunch.id }}" {% if current_lunch_id == lunch.id %}selected{% endif %}>
+                            {{ lunch.date.strftime('%B %d, %Y') }} - {{ lunch.restaurant }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('uploadModal').classList.add('hidden')" 
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="bg-stadium-gold hover:bg-yellow-500 text-stadium-blue font-bold py-2 px-6 rounded shadow-md transition-colors">
+                    Upload
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="fixed inset-0 bg-black bg-opacity-95 hidden z-50 flex items-center justify-center" onclick="closeLightbox()">
+    <div class="relative max-w-5xl max-h-screen p-4" onclick="event.stopPropagation()">
+        <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white hover:text-stadium-gold text-4xl transition-colors">
+            &times;
+        </button>
+        <img id="lightbox-img" src="" alt="Full size" class="max-h-[80vh] max-w-full rounded-lg shadow-2xl border-4 border-white">
+        <div class="mt-4 text-center">
+            <h3 id="lightbox-caption" class="text-2xl font-bold text-white mb-1"></h3>
+            <p id="lightbox-sub" class="text-stadium-gold"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateFileName(input) {
+    const fileName = input.files[0]?.name;
+    if (fileName) {
+        document.getElementById('uploadPlaceholder').classList.add('hidden');
+        const nameEl = document.getElementById('fileName');
+        nameEl.textContent = fileName;
+        nameEl.classList.remove('hidden');
+    }
+}
+
+function openLightbox(url, member, date, restaurant) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox-caption').textContent = member;
+    document.getElementById('lightbox-sub').textContent = `${date} @ ${restaurant}`;
+    document.getElementById('lightbox').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+</script>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
+    }
+</style>
 {% endblock %}

@@ -7,7 +7,8 @@ import io
 import secrets
 import os
 from app import db
-from app.models import Member, Location, Lunch, Attendance, Setting
+from app.models import Member, Location, Lunch, Attendance, Setting, Photo
+from app.services.storage_service import storage_service
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -846,3 +847,32 @@ def delete_location(location_id):
     flash(f'Deleted {name}.', 'success')
     return redirect(url_for('admin.locations'))
 
+
+@admin_bp.route('/photos')
+@admin_required
+def photos():
+    """Manage uploaded photos."""
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    photos = Photo.query.order_by(Photo.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('admin/photos.html', photos=photos)
+
+
+@admin_bp.route('/photos/delete/<int:photo_id>', methods=['POST'])
+@admin_required
+def delete_photo(photo_id):
+    """Delete a photo."""
+    photo = Photo.query.get_or_404(photo_id)
+    
+    # Delete from R2
+    if photo.file_url:
+        storage_service.delete_file(photo.file_url)
+    
+    # Delete from DB
+    db.session.delete(photo)
+    db.session.commit()
+    
+    flash('Photo deleted successfully.', 'success')
+    return redirect(url_for('admin.photos'))

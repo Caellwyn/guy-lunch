@@ -48,6 +48,13 @@
             <div class="text-lg font-semibold">Hosting Queue</div>
             <div class="text-gray-500 text-sm">View full queue</div>
         </a>
+        
+        <a href="{{ url_for('admin.photos') }}"
+           class="bg-gray-100 text-gray-800 rounded-lg p-6 text-center hover:bg-gray-200 transition-colors">
+            <div class="text-3xl mb-2">📷</div>
+            <div class="text-lg font-semibold">Manage Photos</div>
+            <div class="text-gray-500 text-sm">View & delete photos</div>
+        </a>
 
         <a href="{{ url_for('admin.locations') }}"
            class="bg-gray-100 text-gray-800 rounded-lg p-6 text-center hover:bg-gray-200 transition-colors">

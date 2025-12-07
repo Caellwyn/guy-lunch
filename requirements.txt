@@ -22,6 +22,9 @@ APScheduler>=3.10.4
 # Image processing
 Pillow>=10.2.0
 
+# Storage (Cloudflare R2 / S3)
+boto3>=1.34.0
+
 # Google Places API
 requests>=2.31.0
 
