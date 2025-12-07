@@ -101,7 +101,7 @@ guy-lunch/
 - `/` - Home page
 - `/health` - Health check for Railway
 - `/confirm/<token>` - Host confirmation (select restaurant)
-- `/rate/<token>` - Rating submission (after lunch)
+- `/rate/<token>/<rating>` - One-click rating (1-5 from email)
 
 **API Routes (Implemented):**
 - `/api/places/search?q=<query>` - Search restaurants via Google Places
@@ -271,11 +271,12 @@ templates/
   - Manual entry fallback
   - Edit/delete existing locations
   - View all location details (rating, price, visits)
-- [x] Rating submission system (`/rate/<token>`)
-  - Token-based access (sent via email after lunch)
-  - 5-star rating with optional comments
+- [x] One-click rating system (`/rate/<token>/<rating>`)
+  - Clickable star links in email (1-5 stars)
+  - Token-based access (unique per member per lunch)
   - Auto-calculates location average rating
   - Prevents duplicate submissions
+  - Simple thank-you page confirmation
 
 ---
 

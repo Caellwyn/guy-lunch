@@ -39,6 +39,14 @@
             color: inherit !important;
             text-decoration: none !important;
         }
+        .star-link {
+            display: inline-block;
+            text-decoration: none;
+            padding: 8px;
+        }
+        .star-link:hover {
+            transform: scale(1.1);
+        }
         @media screen and (max-width: 600px) {
             .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
             .mobile-full-width { width: 100% !important; }
@@ -62,73 +70,95 @@
                     <!-- Body Content -->
                     <tr>
                         <td class="mobile-padding" style="padding: 32px 24px;">
-                            <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 20px; font-weight: 600;">
+                            <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 20px; font-weight: 600; text-align: center;">
                                 How Was Lunch?
                             </h2>
 
-                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
-                                Hi <strong>{{ params.MEMBER_NAME }}</strong>,
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6; text-align: center;">
+                                Hi <strong>{{ params.MEMBER_NAME }}</strong>! Tap a star to rate today's lunch.
                             </p>
 
-                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
-                                Thanks for joining us at <strong>{{ params.LOCATION_NAME }}</strong> today!
-                                We'd love your quick feedback.
-                            </p>
-
-                            <!-- Rating Card -->
-                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fefce8; border-radius: 8px; margin-bottom: 24px; border-left: 4px solid #eab308;">
+                            <!-- Location Card -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; border-radius: 8px; margin-bottom: 24px;">
                                 <tr>
-                                    <td style="padding: 24px; text-align: center;">
-                                        <p style="margin: 0 0 4px 0; color: #854d0e; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <td style="padding: 20px; text-align: center;">
+                                        <p style="margin: 0 0 4px 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                                             Today's Lunch
                                         </p>
-                                        <h3 style="margin: 0 0 8px 0; color: #713f12; font-size: 20px; font-weight: bold;">
+                                        <h3 style="margin: 0 0 4px 0; color: #111827; font-size: 20px; font-weight: bold;">
                                             {{ params.LOCATION_NAME }}
                                         </h3>
-                                        <p style="margin: 0 0 16px 0; color: #a16207; font-size: 14px;">
-                                            {{ params.LUNCH_DATE }} | Hosted by {{ params.HOST_NAME }}
+                                        <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                                            {{ params.LUNCH_DATE }} &bull; Hosted by {{ params.HOST_NAME }}
                                         </p>
+                                    </td>
+                                </tr>
+                            </table>
 
-                                        <!-- CTA Button -->
+                            <!-- Clickable Star Rating -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0 0 16px 0; color: #374151; font-size: 14px; font-weight: 600;">
+                                            Tap your rating:
+                                        </p>
+                                        <!-- Stars Row -->
                                         <table role="presentation" cellpadding="0" cellspacing="0" align="center">
                                             <tr>
-                                                <td style="background-color: #eab308; border-radius: 6px;">
-                                                    <a href="{{ params.RATING_URL }}"
-                                                       style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
-                                                        Rate This Lunch
+                                                <!-- 1 Star -->
+                                                <td style="padding: 0 4px;">
+                                                    <a href="{{ params.RATING_URL_1 }}" style="display: inline-block; text-decoration: none;">
+                                                        <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="1 star" width="44" height="44" style="display: block;">
+                                                    </a>
+                                                </td>
+                                                <!-- 2 Stars -->
+                                                <td style="padding: 0 4px;">
+                                                    <a href="{{ params.RATING_URL_2 }}" style="display: inline-block; text-decoration: none;">
+                                                        <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="2 stars" width="44" height="44" style="display: block;">
+                                                    </a>
+                                                </td>
+                                                <!-- 3 Stars -->
+                                                <td style="padding: 0 4px;">
+                                                    <a href="{{ params.RATING_URL_3 }}" style="display: inline-block; text-decoration: none;">
+                                                        <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="3 stars" width="44" height="44" style="display: block;">
+                                                    </a>
+                                                </td>
+                                                <!-- 4 Stars -->
+                                                <td style="padding: 0 4px;">
+                                                    <a href="{{ params.RATING_URL_4 }}" style="display: inline-block; text-decoration: none;">
+                                                        <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="4 stars" width="44" height="44" style="display: block;">
+                                                    </a>
+                                                </td>
+                                                <!-- 5 Stars -->
+                                                <td style="padding: 0 4px;">
+                                                    <a href="{{ params.RATING_URL_5 }}" style="display: inline-block; text-decoration: none;">
+                                                        <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="5 stars" width="44" height="44" style="display: block;">
                                                     </a>
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <td style="text-align: center; padding-top: 4px; color: #9ca3af; font-size: 11px;">1</td>
+                                                <td style="text-align: center; padding-top: 4px; color: #9ca3af; font-size: 11px;">2</td>
+                                                <td style="text-align: center; padding-top: 4px; color: #9ca3af; font-size: 11px;">3</td>
+                                                <td style="text-align: center; padding-top: 4px; color: #9ca3af; font-size: 11px;">4</td>
+                                                <td style="text-align: center; padding-top: 4px; color: #9ca3af; font-size: 11px;">5</td>
+                                            </tr>
                                         </table>
                                     </td>
                                 </tr>
                             </table>
-
-                            <p style="margin: 0 0 16px 0; color: #374151; font-size: 16px; line-height: 1.6;">
-                                It only takes 30 seconds! Your rating helps us keep track of the group's favorite spots.
-                            </p>
 
                             <!-- Quick Stats -->
-                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; border-radius: 8px; margin-bottom: 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
                                 <tr>
                                     <td style="padding: 16px;">
-                                        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                                            Today's Stats
-                                        </p>
                                         <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                                             <tr>
-                                                <td style="padding: 4px 0; color: #374151; font-size: 14px;">
-                                                    Attendees:
+                                                <td style="color: #1e40af; font-size: 14px;">
+                                                    <strong>{{ params.ATTENDANCE_COUNT }}</strong> attended
                                                 </td>
-                                                <td style="padding: 4px 0; color: #111827; font-size: 14px; text-align: right; font-weight: 600;">
-                                                    {{ params.ATTENDANCE_COUNT }} people
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="padding: 4px 0; color: #374151; font-size: 14px;">
+                                                <td style="color: #1e40af; font-size: 14px; text-align: right;">
                                                     {{ params.VISIT_TEXT }}
-                                                </td>
-                                                <td style="padding: 4px 0; color: #111827; font-size: 14px; text-align: right;">
                                                 </td>
                                             </tr>
                                         </table>
@@ -136,15 +166,8 @@
                                 </tr>
                             </table>
 
-                            <p style="margin: 0; color: #374151; font-size: 16px;">
-                                See you next Tuesday!<br>
-                                <strong>Tuesday Lunch Scheduler</strong>
-                            </p>
-
-                            <!-- Link fallback -->
-                            <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 12px;">
-                                If the button doesn't work, copy and paste this link into your browser:<br>
-                                <a href="{{ params.RATING_URL }}" style="color: #2563eb;">{{ params.RATING_URL }}</a>
+                            <p style="margin: 24px 0 0 0; color: #6b7280; font-size: 14px; text-align: center;">
+                                One tap and you're done! See you next Tuesday.
                             </p>
                         </td>
                     </tr>
@@ -195,8 +218,12 @@ BREVO TEMPLATE VARIABLES (params object):
 - LOCATION_NAME: Name of the restaurant (e.g., "Zulo's Board Game Cafe")
 - LUNCH_DATE: Formatted date string (e.g., "December 10, 2024")
 - HOST_NAME: Name of today's host (e.g., "Jane Doe")
-- RATING_URL: Full URL with token for member to submit rating
+- RATING_URL_1: URL for 1-star rating (e.g., "https://app.com/rate/TOKEN/1")
+- RATING_URL_2: URL for 2-star rating
+- RATING_URL_3: URL for 3-star rating
+- RATING_URL_4: URL for 4-star rating
+- RATING_URL_5: URL for 5-star rating
 - ATTENDANCE_COUNT: Number of people who attended (e.g., "18")
-- VISIT_TEXT: Text about visit count (e.g., "Our 3rd visit here" or "First time visiting!")
-- AI_GUY_LOGO_URL: The AI Guy logo for footer (Ai_guy_transparent.png)
+- VISIT_TEXT: Text about visit count (e.g., "Visit #3" or "First visit!")
+- AI_GUY_LOGO_URL: The AI Guy logo for footer
 -->

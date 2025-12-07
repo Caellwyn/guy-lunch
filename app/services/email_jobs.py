@@ -448,16 +448,22 @@ def send_rating_requests(dry_run: bool = False) -> dict:
 
             db.session.commit()
 
-            rating_url = f"{app_url}/rate/{rating_token}"
+            # Generate individual URLs for each star rating (1-5)
+            base_rating_url = f"{app_url}/rate/{rating_token}"
 
             params = {
                 'MEMBER_NAME': member.name,
                 'LOCATION_NAME': location.name,
                 'LUNCH_DATE': today.strftime('%B %d, %Y'),
                 'HOST_NAME': host.name if host else 'Unknown',
-                'RATING_URL': rating_url,
+                'RATING_URL_1': f"{base_rating_url}/1",
+                'RATING_URL_2': f"{base_rating_url}/2",
+                'RATING_URL_3': f"{base_rating_url}/3",
+                'RATING_URL_4': f"{base_rating_url}/4",
+                'RATING_URL_5': f"{base_rating_url}/5",
                 'ATTENDANCE_COUNT': str(len(attendances)),
                 'VISIT_TEXT': f"Visit #{location.visit_count}" if hasattr(location, 'visit_count') and location.visit_count else 'First visit',
+                'AI_GUY_LOGO_URL': f"{app_url}/static/images/ai-guy-logo.png",
             }
 
             email_result = email_service.send_email(
