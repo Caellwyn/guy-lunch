@@ -1,288 +1,197 @@
 {% extends "base.html" %}
 
-{% block title %}My Dashboard - Tuesday Lunch{% endblock %}
+{% block title %}Locker Room - {{ member.name }}{% endblock %}
+
+{% block body_class %}bg-stadium-grass{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <!-- Welcome Header -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Welcome, {{ member.name }}!</h1>
-                    <p class="text-blue-100 mt-1">Member Portal</p>
-                </div>
-                <a href="{{ url_for('member.logout') }}"
-                   class="text-blue-100 hover:text-white text-sm flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                    Logout
-                </a>
-            </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-3 divide-x divide-gray-200">
-            <div class="p-4 text-center">
-                <div class="text-2xl font-bold text-gray-900">{{ total_attended }}</div>
-                <div class="text-xs text-gray-500 uppercase tracking-wide">Lunches Attended</div>
-            </div>
-            <div class="p-4 text-center">
-                <div class="text-2xl font-bold text-gray-900">{{ total_hosted }}</div>
-                <div class="text-xs text-gray-500 uppercase tracking-wide">Times Hosted</div>
-            </div>
-            <div class="p-4 text-center">
-                <div class="text-2xl font-bold text-gray-900">#{{ position }}</div>
-                <div class="text-xs text-gray-500 uppercase tracking-wide">In Lineup</div>
-            </div>
-        </div>
+<div class="max-w-6xl mx-auto">
+    
+    <!-- Top Header: "Locker Room Card" -->
+    <div class="text-center mb-8 pt-4">
+        <h1 class="font-jersey text-4xl md:text-6xl text-white drop-shadow-lg tracking-wider">
+            <span class="text-red-600 text-stroke-white">THE LINEUP CARD</span>
+        </h1>
+        <p class="font-condensed text-xl text-white uppercase tracking-widest mt-2 drop-shadow-md">
+            Welcome, Manager {{ member.name.split()[0] }}!
+        </p>
     </div>
 
-    <!-- Your Hosting Status Card -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <span class="text-2xl">&#9918;</span> Your Batting Position
-            </h2>
-        </div>
-        <div class="p-6">
-            {% if member_status == 'at_bat' %}
-                <!-- AT BAT - You're hosting this week! -->
-                <div class="bg-green-50 border-2 border-green-500 rounded-xl p-6 text-center">
-                    <div class="text-5xl mb-3">&#127951;</div>
-                    <h3 class="text-2xl font-bold text-green-800 mb-2">YOU'RE AT BAT!</h3>
-                    <p class="text-green-700 text-lg">You're hosting this Tuesday, {{ next_tuesday.strftime('%B %d') }}!</p>
-                    {% if upcoming_lunch and upcoming_lunch.location %}
-                        <p class="text-green-600 mt-2">Location: <strong>{{ upcoming_lunch.location.name }}</strong></p>
-                    {% endif %}
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- LEFT COLUMN: The Player Card (Metal Texture) -->
+        <div class="lg:col-span-5">
+            <div class="texture-metal p-1 relative transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                <!-- Screws -->
+                <div class="absolute top-2 left-2 screw-head"></div>
+                <div class="absolute top-2 right-2 screw-head"></div>
+                <div class="absolute bottom-2 left-2 screw-head"></div>
+                <div class="absolute bottom-2 right-2 screw-head"></div>
 
-            {% elif member_status == 'on_deck' %}
-                <!-- ON DECK - You're next! -->
-                <div class="bg-yellow-50 border-2 border-yellow-500 rounded-xl p-6 text-center">
-                    <div class="text-5xl mb-3">&#127951;</div>
-                    <h3 class="text-2xl font-bold text-yellow-800 mb-2">YOU'RE ON DECK!</h3>
-                    <p class="text-yellow-700 text-lg">You're hosting next week!</p>
-                    <p class="text-yellow-600 mt-2">
-                        Estimated date: <strong>{{ estimated_hosting_date.strftime('%B %d, %Y') }}</strong>
-                    </p>
-                    <p class="text-yellow-600 mt-1 text-sm">
-                        (Or pinch in if {{ lineup.at_bat.name }} needs a sub)
-                    </p>
-                </div>
-
-            {% elif member_status == 'in_hole' %}
-                <!-- IN THE HOLE - Third up -->
-                <div class="bg-orange-50 border-2 border-orange-400 rounded-xl p-6 text-center">
-                    <div class="text-5xl mb-3">&#127951;</div>
-                    <h3 class="text-xl font-bold text-orange-800 mb-2">YOU'RE IN THE HOLE</h3>
-                    <p class="text-orange-700">You're third in the batting order!</p>
-                    <p class="text-orange-600 mt-2">
-                        Estimated hosting date: <strong>{{ estimated_hosting_date.strftime('%B %d, %Y') }}</strong>
-                    </p>
-                </div>
-
-            {% else %}
-                <!-- IN THE DUGOUT -->
-                <div class="bg-gray-50 border-2 border-gray-300 rounded-xl p-6 text-center">
-                    <div class="text-5xl mb-3">&#127971;</div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">IN THE DUGOUT</h3>
-                    <p class="text-gray-600">You're #{{ position }} in the batting order</p>
-                    {% if estimated_hosting_date %}
-                        <p class="text-gray-500 mt-2">
-                            Estimated hosting date: <strong>{{ estimated_hosting_date.strftime('%B %d, %Y') }}</strong>
-                        </p>
-                        <p class="text-gray-400 mt-1 text-sm">
-                            (About {{ ((estimated_hosting_date - next_tuesday).days // 7) }} weeks from now)
-                        </p>
-                    {% endif %}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Baseball Lineup Card -->
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-700 to-green-800">
-            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
-                &#9918; The Batting Order
-            </h2>
-        </div>
-
-        <div class="divide-y divide-gray-200">
-            <!-- AT BAT -->
-            {% if lineup.at_bat %}
-            <div class="p-4 {% if lineup.at_bat.id == member.id %}bg-green-50{% endif %}">
-                <div class="flex items-center gap-4">
-                    <div class="flex-shrink-0 w-20 text-center">
-                        <span class="inline-block bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                            At Bat
-                        </span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-semibold text-gray-900 {% if lineup.at_bat.id == member.id %}text-green-700{% endif %}">
-                            {{ lineup.at_bat.name }}
-                            {% if lineup.at_bat.id == member.id %}<span class="text-green-600">(You!)</span>{% endif %}
+                <div class="border-2 border-gray-400 rounded-lg p-6 h-full flex flex-col items-center text-center">
+                    
+                    <!-- Jersey Number Section -->
+                    <div class="w-full flex justify-between items-start mb-6">
+                        <div class="w-1/2 text-left">
+                            <!-- Player Image Placeholder -->
+                            <img src="{{ url_for('static', filename='img/player_silhouette.png') }}" 
+                                 alt="Player" 
+                                 class="w-32 h-auto opacity-80 mix-blend-multiply"
+                                 onerror="this.style.display='none'">
                         </div>
-                        <div class="text-sm text-gray-500">Hosting {{ next_tuesday.strftime('%B %d') }}</div>
-                    </div>
-                    <div class="text-3xl">&#127951;</div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- ON DECK -->
-            {% if lineup.on_deck %}
-            <div class="p-4 {% if lineup.on_deck.id == member.id %}bg-yellow-50{% endif %}">
-                <div class="flex items-center gap-4">
-                    <div class="flex-shrink-0 w-20 text-center">
-                        <span class="inline-block bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                            On Deck
-                        </span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-semibold text-gray-900 {% if lineup.on_deck.id == member.id %}text-yellow-700{% endif %}">
-                            {{ lineup.on_deck.name }}
-                            {% if lineup.on_deck.id == member.id %}<span class="text-yellow-600">(You!)</span>{% endif %}
+                        <div class="w-1/2 text-right">
+                            <div class="font-condensed font-bold text-blue-900 text-sm uppercase tracking-tighter">Line-up Order</div>
+                            <div class="font-jersey text-8xl text-embossed leading-none">{{ position }}</div>
                         </div>
-                        <div class="text-sm text-gray-500">Next week</div>
                     </div>
-                    <div class="text-2xl">&#128170;</div>
-                </div>
-            </div>
-            {% endif %}
 
-            <!-- IN THE HOLE -->
-            {% if lineup.in_hole %}
-            <div class="p-4 {% if lineup.in_hole.id == member.id %}bg-orange-50{% endif %}">
-                <div class="flex items-center gap-4">
-                    <div class="flex-shrink-0 w-20 text-center">
-                        <span class="inline-block bg-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                            In Hole
-                        </span>
+                    <!-- Status Plate -->
+                    <div class="bg-gray-800 w-full rounded p-4 mb-6 shadow-inner border-b-2 border-gray-600">
+                        <h2 class="font-jersey text-3xl text-red-500 tracking-widest animate-pulse">
+                            {% if member_status == 'at_bat' %}AT THE PLATE{% endif %}
+                            {% if member_status == 'on_deck' %}ON DECK{% endif %}
+                            {% if member_status == 'in_hole' %}IN THE HOLE{% endif %}
+                            {% if member_status == 'dugout' %}IN THE DUGOUT{% endif %}
+                        </h2>
                     </div>
-                    <div class="flex-1">
-                        <div class="font-semibold text-gray-900 {% if lineup.in_hole.id == member.id %}text-orange-700{% endif %}">
-                            {{ lineup.in_hole.name }}
-                            {% if lineup.in_hole.id == member.id %}<span class="text-orange-600">(You!)</span>{% endif %}
-                        </div>
-                        <div class="text-sm text-gray-500">Two weeks out</div>
-                    </div>
-                    <div class="text-2xl">&#128064;</div>
-                </div>
-            </div>
-            {% endif %}
 
-            <!-- DUGOUT Preview (first 3) -->
-            {% for m in lineup.dugout[:3] %}
-            <div class="p-4 {% if m.id == member.id %}bg-blue-50{% endif %}">
-                <div class="flex items-center gap-4">
-                    <div class="flex-shrink-0 w-20 text-center">
-                        <span class="inline-block bg-gray-400 text-white text-xs font-bold px-3 py-1 rounded-full">
-                            #{{ loop.index + 3 }}
-                        </span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-gray-700 {% if m.id == member.id %}text-blue-700 font-semibold{% endif %}">
-                            {{ m.name }}
-                            {% if m.id == member.id %}<span class="text-blue-600">(You!)</span>{% endif %}
+                    <!-- Stats Plates -->
+                    <div class="w-full space-y-3">
+                        <!-- Hosting Stats -->
+                        <div class="bg-gray-300 rounded p-3 shadow-md border border-gray-400 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">⚾</span>
+                                <div class="text-left">
+                                    <div class="font-condensed font-bold text-gray-700 uppercase text-xs">Home Runs (Hosted)</div>
+                                    <div class="font-jersey text-xl text-gray-800">CAREER TOTAL</div>
+                                </div>
+                            </div>
+                            <div class="font-scoreboard text-3xl text-gray-900">{{ total_hosted }}</div>
                         </div>
-                        <div class="text-sm text-gray-400">{{ m.attendance_since_hosting }} lunches since last hosted</div>
+
+                        <!-- Attendance Stats -->
+                        <div class="bg-gray-300 rounded p-3 shadow-md border border-gray-400 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">🧢</span>
+                                <div class="text-left">
+                                    <div class="font-condensed font-bold text-gray-700 uppercase text-xs">Games Played</div>
+                                    <div class="font-jersey text-xl text-gray-800">LUNCHES ATTENDED</div>
+                                </div>
+                            </div>
+                            <div class="font-scoreboard text-3xl text-gray-900">{{ total_attended }}</div>
+                        </div>
                     </div>
+
                 </div>
             </div>
-            {% endfor %}
         </div>
 
-        <!-- See Full Lineup Link -->
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <a href="{{ url_for('member.lineup') }}" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                View full batting order ({{ total_members }} members) &rarr;
-            </a>
+        <!-- RIGHT COLUMN: The Scoreboard (Dark LED Texture) -->
+        <div class="lg:col-span-7">
+            <div class="texture-scoreboard p-6 text-yellow-400 h-full flex flex-col">
+                
+                <!-- Scoreboard Header -->
+                <div class="border-b-2 border-gray-700 pb-4 mb-6 text-center">
+                    <h2 class="font-condensed text-3xl text-white uppercase tracking-widest">Stadium Scoreboard</h2>
+                    <p class="font-scoreboard text-sm text-gray-400">TUESDAY LUNCH LEAGUE // {{ next_tuesday.strftime('%b %d').upper() }}</p>
+                </div>
+
+                <!-- The Lineup Grid -->
+                <div class="flex-grow space-y-4">
+                    
+                    <!-- 1. AT BAT -->
+                    <div class="flex items-center gap-4 bg-gray-900 p-3 rounded border border-gray-700">
+                        <div class="led-light active-red"></div>
+                        <div class="flex-1">
+                            <div class="font-condensed text-gray-500 text-xs uppercase">At Bat (Hosting This Week)</div>
+                            <div class="font-scoreboard text-2xl text-white tracking-wide">
+                                {{ lineup.at_bat.name.upper() }}
+                            </div>
+                            {% if upcoming_lunch and upcoming_lunch.location %}
+                            <div class="font-scoreboard text-sm text-yellow-500">
+                                @ {{ upcoming_lunch.location.name.upper() }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="font-jersey text-4xl text-gray-700 opacity-50">1</div>
+                    </div>
+
+                    <!-- 2. ON DECK -->
+                    <div class="flex items-center gap-4 bg-gray-900 p-3 rounded border border-gray-700">
+                        <div class="led-light active-yellow"></div>
+                        <div class="flex-1">
+                            <div class="font-condensed text-gray-500 text-xs uppercase">On Deck (Next Week)</div>
+                            <div class="font-scoreboard text-xl text-gray-300 tracking-wide">
+                                {{ lineup.on_deck.name.upper() }}
+                            </div>
+                        </div>
+                        <div class="font-jersey text-3xl text-gray-700 opacity-50">2</div>
+                    </div>
+
+                    <!-- 3. IN THE HOLE -->
+                    <div class="flex items-center gap-4 bg-gray-900 p-3 rounded border border-gray-700">
+                        <div class="led-light active-green"></div>
+                        <div class="flex-1">
+                            <div class="font-condensed text-gray-500 text-xs uppercase">In The Hole (2 Weeks Out)</div>
+                            <div class="font-scoreboard text-xl text-gray-300 tracking-wide">
+                                {{ lineup.in_hole.name.upper() }}
+                            </div>
+                        </div>
+                        <div class="font-jersey text-3xl text-gray-700 opacity-50">3</div>
+                    </div>
+
+                </div>
+
+                <!-- Your Projection Box -->
+                <div class="mt-8 bg-blue-900 bg-opacity-30 border border-blue-800 rounded p-4 flex items-center gap-4">
+                    <div class="text-3xl">➔</div>
+                    <div>
+                        <div class="font-condensed text-blue-300 text-xs uppercase">Your Projected Game Date</div>
+                        <div class="font-scoreboard text-xl text-white">
+                            {% if estimated_hosting_date %}
+                                {{ estimated_hosting_date.strftime('%B %d, %Y').upper() }}
+                            {% else %}
+                                TBD
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-6 grid grid-cols-2 gap-4">
+                    <a href="{{ url_for('member.lineup') }}" class="bg-red-700 hover:bg-red-600 text-white font-condensed uppercase py-3 px-4 rounded text-center transition-colors border-b-4 border-red-900 active:border-b-0 active:translate-y-1">
+                        View Full Lineup
+                    </a>
+                    <a href="{{ url_for('member.history') }}" class="bg-gray-700 hover:bg-gray-600 text-white font-condensed uppercase py-3 px-4 rounded text-center transition-colors border-b-4 border-gray-900 active:border-b-0 active:translate-y-1">
+                        My Stats
+                    </a>
+                </div>
+
+            </div>
         </div>
     </div>
 
-    <!-- Upcoming Lunch Info -->
-    {% if upcoming_lunch %}
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900">This Week's Lunch</h2>
-        </div>
-        <div class="p-6">
-            <div class="flex items-start gap-4">
-                <div class="text-4xl">&#127860;</div>
-                <div>
-                    <div class="font-semibold text-gray-900">{{ next_tuesday.strftime('%A, %B %d, %Y') }}</div>
-                    {% if upcoming_lunch.location %}
-                        <div class="text-gray-600 mt-1">{{ upcoming_lunch.location.name }}</div>
-                        <div class="text-gray-500 text-sm">{{ upcoming_lunch.location.address }}</div>
-                    {% else %}
-                        <div class="text-gray-500 mt-1">Location TBD</div>
-                    {% endif %}
-                    {% if upcoming_lunch.host %}
-                        <div class="text-sm text-gray-500 mt-2">
-                            Hosted by: <strong>{{ upcoming_lunch.host.name }}</strong>
-                        </div>
-                    {% endif %}
-                </div>
+    <!-- Bottom Nav / Trophy Case Placeholder -->
+    <div class="mt-12 grid grid-cols-3 gap-4 text-center opacity-80">
+        <div class="text-white">
+            <div class="bg-red-600 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2 shadow-lg border-2 border-white">
+                📷
             </div>
+            <div class="font-condensed uppercase text-sm font-bold">Team Photos</div>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Recent Attendance History (Preview) -->
-    {% if recent_attendances %}
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900">Your Recent Lunches</h2>
-        </div>
-        <div class="divide-y divide-gray-200">
-            {% for attendance in recent_attendances[:5] %}
-            <div class="px-6 py-3 flex items-center justify-between">
-                <div>
-                    <div class="font-medium text-gray-900">
-                        {{ attendance.lunch.date.strftime('%B %d, %Y') }}
-                        {% if attendance.was_host %}
-                            <span class="ml-2 inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Host</span>
-                        {% endif %}
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        {% if attendance.lunch.location %}
-                            {{ attendance.lunch.location.name }}
-                        {% else %}
-                            Location not recorded
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="text-gray-400">
-                    &#10003;
-                </div>
+        <div class="text-white">
+            <div class="bg-red-600 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2 shadow-lg border-2 border-white">
+                🏆
             </div>
-            {% endfor %}
+            <div class="font-condensed uppercase text-sm font-bold">Season Highlights</div>
         </div>
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <a href="{{ url_for('member.history') }}" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                View full history &rarr;
-            </a>
+        <div class="text-white">
+            <div class="bg-red-600 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2 shadow-lg border-2 border-white">
+                📜
+            </div>
+            <div class="font-condensed uppercase text-sm font-bold">The Stat Sheet</div>
         </div>
     </div>
-    {% endif %}
 
-    <!-- Quick Links -->
-    <div class="grid grid-cols-2 gap-4">
-        <a href="{{ url_for('member.gallery') }}"
-           class="bg-white rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow">
-            <div class="text-3xl mb-2">&#128247;</div>
-            <div class="font-medium text-gray-900">Photo Gallery</div>
-            <div class="text-sm text-gray-500">Coming Soon</div>
-        </a>
-        <a href="{{ url_for('member.history') }}"
-           class="bg-white rounded-lg shadow p-6 text-center hover:shadow-lg transition-shadow">
-            <div class="text-3xl mb-2">&#128197;</div>
-            <div class="font-medium text-gray-900">My History</div>
-            <div class="text-sm text-gray-500">{{ total_attended }} lunches</div>
-        </a>
-    </div>
 </div>
 {% endblock %}

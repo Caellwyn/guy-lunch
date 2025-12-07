@@ -1083,21 +1083,22 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 **4.3.3: Member Portal Dashboard (1 hour)**
 
-- [ ] **Personal dashboard (mobile-first)**
-  - Your stats (lunches attended, photos uploaded, times tagged)
-  - Countdown to next time you host
-  - Recent photos from group
-  - Upcoming lunch info
-  - **Bottom navigation: Home | Gallery | Upload | Profile**
+- [x] **Personal dashboard (mobile-first)**
+  - [x] Your stats (lunches attended, photos uploaded, times tagged)
+  - [x] Countdown to next time you host
+  - [x] Recent photos from group (Placeholder)
+  - [x] Upcoming lunch info
+  - [x] **Bottom navigation: Home | Gallery | Upload | Profile** (Implemented as links)
+  - [x] **Stadium Theme UI:** Custom "Locker Room" design with textures
 
 - [ ] **Quick actions**
   - [Upload Photo] - prominent button
   - [View Gallery]
   - [Rate Last Lunch] (if not done)
 
-- [ ] **Profile page**
-  - Your attendance history
-  - Your uploaded photos
+- [x] **Profile page**
+  - [x] Your attendance history (Box Score style)
+  - [ ] Your uploaded photos
   - Photos you're tagged in
   - Edit profile (name, email)
 

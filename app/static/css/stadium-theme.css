@@ -1,0 +1,209 @@
+/* 
+   Stadium Theme - Tuesday Lunch Scheduler 
+   Skeuomorphic design elements for the member portal
+*/
+
+/* --- FONTS --- */
+/* Varsity/Jersey Font */
+@import url('https://fonts.googleapis.com/css2?family=Graduate&display=swap');
+/* Scoreboard/Digital Font */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+/* Condensed Body Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+
+:root {
+    --stadium-green: #2d5a27;
+    --dugout-dirt: #8b5a2b;
+    --chalk-white: #f0f0f0;
+    --jersey-red: #c41e3a;
+    --metal-gray: #8c8c8c;
+}
+
+/* --- TEXTURES & BACKGROUNDS --- */
+
+/* The Main Field Background */
+.bg-stadium-grass {
+    background-color: var(--stadium-green);
+    /* Fallback gradient if image missing */
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.1)), url('../img/grass_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Parallax effect */
+}
+
+/* Brushed Metal Card (Player Card) */
+.texture-metal {
+    background-color: #e0e0e0;
+    /* Fallback metallic gradient */
+    background-image: repeating-linear-gradient(
+        135deg,
+        rgba(255,255,255,0.4) 0px,
+        rgba(255,255,255,0.4) 1px,
+        transparent 1px,
+        transparent 2px
+    ), linear-gradient(to bottom, #f0f0f0, #d0d0d0);
+    /* Real texture if available */
+    background-image: url('../img/metal_texture.jpg'); 
+    background-size: cover;
+    box-shadow: 
+        inset 2px 2px 5px rgba(255,255,255,0.7),
+        inset -2px -2px 5px rgba(0,0,0,0.3),
+        5px 5px 15px rgba(0,0,0,0.5);
+    border-radius: 12px;
+    border: 1px solid #999;
+}
+
+/* Wood Grain (Lineup Card Header) */
+.texture-wood {
+    background-color: #8b5a2b;
+    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4));
+    /* Real texture if available */
+    background-image: url('../img/wood_texture.jpg');
+    background-size: cover;
+    border: 4px solid #5c3a1e;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+}
+
+/* Scoreboard Dark Screen */
+.texture-scoreboard {
+    background-color: #1a1a1a;
+    background-image: radial-gradient(#222 15%, transparent 16%), radial-gradient(#222 15%, transparent 16%);
+    background-size: 4px 4px;
+    background-position: 0 0, 2px 2px;
+    border: 8px solid #333;
+    border-radius: 8px;
+    box-shadow: 
+        inset 0 0 20px rgba(0,0,0,0.8),
+        0 4px 10px rgba(0,0,0,0.5);
+    color: #ffeb3b; /* Default LED color */
+}
+
+/* --- TYPOGRAPHY --- */
+
+.font-jersey {
+    font-family: 'Graduate', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.font-scoreboard {
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px currentColor; /* LED Glow effect */
+}
+
+.font-condensed {
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+/* --- SPECIAL ELEMENTS --- */
+
+/* Embossed Text Effect (for Metal) */
+.text-embossed {
+    color: #c41e3a; /* Jersey Red */
+    text-shadow: 
+        1px 1px 0px rgba(255,255,255,0.5), 
+        -1px -1px 1px rgba(0,0,0,0.2);
+}
+
+/* Inset Text Effect (Stamped into metal) */
+.text-stamped {
+    color: #444;
+    text-shadow: 
+        -1px -1px 0 rgba(0,0,0,0.3),
+        1px 1px 0 rgba(255,255,255,0.5);
+}
+
+/* LED Light Indicator */
+.led-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #333;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
+    display: inline-block;
+}
+
+.led-light.active-red {
+    background-color: #ff3333;
+    box-shadow: 0 0 8px #ff3333, inset -1px -1px 3px rgba(0,0,0,0.2);
+}
+
+.led-light.active-green {
+    background-color: #33ff33;
+    box-shadow: 0 0 8px #33ff33, inset -1px -1px 3px rgba(0,0,0,0.2);
+}
+
+.led-light.active-yellow {
+    background-color: #ffcc00;
+    box-shadow: 0 0 8px #ffcc00, inset -1px -1px 3px rgba(0,0,0,0.2);
+}
+
+/* Screw Head (Visual decoration) */
+.screw-head {
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(circle at 30% 30%, #ddd, #999);
+    border-radius: 50%;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    position: relative;
+    display: inline-block;
+}
+.screw-head::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 2px;
+    background: #666;
+    transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.5);
+}
+
+/* --- BOX SCORE / PAPER STYLES --- */
+
+.texture-paper {
+    background-color: #fdfbf7;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4c5b0' fill-opacity='0.4'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'/%3E%3C/g%3E%3C/svg%3E");
+    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+.box-score-grid {
+    border: 2px solid #333;
+}
+
+.box-score-header {
+    background-color: #333;
+    color: white;
+    font-family: 'Graduate', serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px;
+    border-bottom: 2px solid #333;
+}
+
+.box-score-row {
+    border-bottom: 1px solid #ccc;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.box-score-row:last-child {
+    border-bottom: none;
+}
+
+.box-score-cell {
+    padding: 8px 12px;
+    border-right: 1px solid #ccc;
+}
+
+.box-score-cell:last-child {
+    border-right: none;
+}
+
+.handwritten-note {
+    font-family: 'Courier New', Courier, monospace; /* Fallback for handwriting */
+    color: #000080; /* Blue ink color */
+    transform: rotate(-2deg);
+}
+

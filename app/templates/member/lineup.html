@@ -2,85 +2,94 @@
 
 {% block title %}Batting Order - Tuesday Lunch{% endblock %}
 
+{% block body_class %}bg-stadium-grass{% endblock %}
+
 {% block content %}
-<div class="max-w-2xl mx-auto">
+<div class="max-w-3xl mx-auto">
     <!-- Back Link -->
-    <div class="mb-4">
-        <a href="{{ url_for('member.dashboard') }}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+    <div class="mb-6">
+        <a href="{{ url_for('member.dashboard') }}" class="inline-flex items-center gap-2 bg-white bg-opacity-90 px-4 py-2 rounded-full shadow hover:bg-opacity-100 transition-all text-blue-800 font-condensed font-bold uppercase text-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
-            Back to Dashboard
+            Back to Locker Room
         </a>
     </div>
 
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-green-700 to-green-800 rounded-t-lg px-6 py-6 text-center">
-        <div class="text-4xl mb-2">&#9918;</div>
-        <h1 class="text-2xl font-bold text-white">The Batting Order</h1>
-        <p class="text-green-100 mt-1">Hosting lineup for Tuesday Lunch</p>
+    <!-- Header (Wood Texture) -->
+    <div class="texture-wood rounded-t-lg px-6 py-8 text-center relative z-10">
+        <!-- Nails/Screws -->
+        <div class="absolute top-4 left-4 w-3 h-3 rounded-full bg-yellow-900 shadow-inner"></div>
+        <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-yellow-900 shadow-inner"></div>
+        
+        <div class="text-5xl mb-2 drop-shadow-md">⚾</div>
+        <h1 class="font-jersey text-4xl text-white drop-shadow-md tracking-wider">THE BATTING ORDER</h1>
+        <p class="font-condensed text-yellow-100 mt-2 uppercase tracking-widest text-sm">Official Lineup Card</p>
     </div>
 
-    <!-- Lineup List -->
-    <div class="bg-white rounded-b-lg shadow-lg overflow-hidden">
-        <div class="divide-y divide-gray-200">
+    <!-- Lineup List (Paper/Clipboard look) -->
+    <div class="bg-gray-100 rounded-b-lg shadow-2xl overflow-hidden border-x-4 border-b-4 border-gray-300 relative">
+        <!-- Paper lines texture overlay -->
+        <div class="absolute inset-0 pointer-events-none opacity-10" 
+             style="background-image: repeating-linear-gradient(transparent, transparent 39px, #000 40px);"></div>
+
+        <div class="divide-y divide-gray-300 relative z-0">
             {% for item in lineup_with_dates %}
-            <div class="p-4 {% if item.member.id == member.id %}bg-blue-50 border-l-4 border-blue-500{% endif %}
-                        {% if item.status == 'at_bat' and item.member.id != member.id %}bg-green-50{% endif %}
-                        {% if item.status == 'on_deck' and item.member.id != member.id %}bg-yellow-50{% endif %}">
-                <div class="flex items-center gap-4">
-                    <!-- Position Badge -->
-                    <div class="flex-shrink-0 w-24 text-center">
-                        {% if item.status == 'at_bat' %}
-                            <span class="inline-block bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                At Bat
-                            </span>
-                        {% elif item.status == 'on_deck' %}
-                            <span class="inline-block bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                On Deck
-                            </span>
-                        {% elif item.status == 'in_hole' %}
-                            <span class="inline-block bg-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                In Hole
-                            </span>
-                        {% else %}
-                            <span class="inline-block bg-gray-400 text-white text-xs font-bold w-8 h-8 rounded-full leading-8">
-                                {{ item.position }}
-                            </span>
-                        {% endif %}
-                    </div>
+            <div class="p-4 flex items-center gap-4 hover:bg-white transition-colors
+                        {% if item.member.id == member.id %}bg-blue-50{% endif %}
+                        {% if item.status == 'at_bat' %}bg-green-50{% endif %}">
+                
+                <!-- Position Badge -->
+                <div class="flex-shrink-0 w-16 text-center">
+                    {% if item.status == 'at_bat' %}
+                        <div class="w-12 h-12 mx-auto bg-red-600 text-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                            <span class="font-jersey text-xl">1</span>
+                        </div>
+                    {% elif item.status == 'on_deck' %}
+                        <div class="w-10 h-10 mx-auto bg-yellow-500 text-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                            <span class="font-jersey text-lg">2</span>
+                        </div>
+                    {% elif item.status == 'in_hole' %}
+                        <div class="w-10 h-10 mx-auto bg-green-600 text-white rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                            <span class="font-jersey text-lg">3</span>
+                        </div>
+                    {% else %}
+                        <div class="font-jersey text-2xl text-gray-400">
+                            {{ item.position }}
+                        </div>
+                    {% endif %}
+                </div>
 
-                    <!-- Member Info -->
-                    <div class="flex-1">
-                        <div class="font-semibold text-gray-900 {% if item.member.id == member.id %}text-blue-700{% endif %}">
+                <!-- Member Info -->
+                <div class="flex-1">
+                    <div class="flex items-baseline gap-2">
+                        <h3 class="font-condensed font-bold text-xl text-gray-800 uppercase tracking-tight {% if item.member.id == member.id %}text-blue-700{% endif %}">
                             {{ item.member.name }}
-                            {% if item.member.id == member.id %}
-                                <span class="text-blue-600 font-normal">(You!)</span>
-                            {% endif %}
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            {{ item.estimated_date.strftime('%B %d, %Y') }}
-                        </div>
-                        <div class="text-xs text-gray-400">
-                            {{ item.member.attendance_since_hosting }} lunches since last hosted
-                            {% if item.member.total_hosting_count %}
-                                &bull; Hosted {{ item.member.total_hosting_count }} time{% if item.member.total_hosting_count != 1 %}s{% endif %} total
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Icon -->
-                    <div class="text-2xl">
-                        {% if item.status == 'at_bat' %}
-                            &#127951;
-                        {% elif item.status == 'on_deck' %}
-                            &#128170;
-                        {% elif item.status == 'in_hole' %}
-                            &#128064;
-                        {% else %}
-                            &#127971;
+                        </h3>
+                        {% if item.member.id == member.id %}
+                            <span class="font-handwriting text-sm text-blue-600 transform -rotate-3">(You)</span>
                         {% endif %}
                     </div>
+                    
+                    <div class="flex items-center gap-4 mt-1">
+                        <div class="font-scoreboard text-gray-600 text-sm bg-gray-200 px-2 rounded">
+                            {{ item.estimated_date.strftime('%b %d') }}
+                        </div>
+                        <div class="text-xs font-condensed text-gray-500 uppercase">
+                            {{ item.member.attendance_since_hosting }} G | {{ item.member.total_hosting_count }} HR
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Label -->
+                <div class="text-right hidden sm:block">
+                    {% if item.status == 'at_bat' %}
+                        <span class="font-jersey text-red-600 text-lg">AT BAT</span>
+                    {% elif item.status == 'on_deck' %}
+                        <span class="font-jersey text-yellow-600 text-lg">ON DECK</span>
+                    {% elif item.status == 'in_hole' %}
+                        <span class="font-jersey text-green-600 text-lg">IN HOLE</span>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -88,30 +97,26 @@
     </div>
 
     <!-- Legend -->
-    <div class="mt-6 bg-white rounded-lg shadow p-4">
-        <h3 class="font-semibold text-gray-700 mb-3">How It Works</h3>
-        <div class="space-y-2 text-sm text-gray-600">
+    <div class="mt-6 bg-black bg-opacity-50 rounded-lg p-4 text-white backdrop-blur-sm">
+        <h3 class="font-condensed font-bold uppercase text-gray-300 mb-2 text-sm">Scouting Report</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm font-condensed">
             <div class="flex items-center gap-2">
-                <span class="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">At Bat</span>
-                <span>Hosting this Tuesday</span>
+                <span class="w-3 h-3 rounded-full bg-red-600"></span>
+                <span>AT BAT: Hosting this Tuesday</span>
             </div>
             <div class="flex items-center gap-2">
-                <span class="inline-block bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">On Deck</span>
-                <span>Hosting next week (or pinch-hitting if needed)</span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                <span>ON DECK: Next up</span>
             </div>
             <div class="flex items-center gap-2">
-                <span class="inline-block bg-orange-400 text-white text-xs font-bold px-2 py-0.5 rounded-full">In Hole</span>
-                <span>Third up in the rotation</span>
+                <span class="w-3 h-3 rounded-full bg-green-600"></span>
+                <span>IN HOLE: Third in rotation</span>
             </div>
             <div class="flex items-center gap-2">
-                <span class="inline-block bg-gray-400 text-white text-xs font-bold w-6 h-6 rounded-full text-center leading-6">#</span>
-                <span>Waiting in the dugout</span>
+                <span class="text-gray-400 font-bold">G</span>
+                <span>Games (Lunches) since last host</span>
             </div>
         </div>
-        <p class="mt-4 text-xs text-gray-500">
-            The order is based on how many lunches you've attended since your last time hosting.
-            More lunches = closer to the front of the line!
-        </p>
     </div>
 </div>
 {% endblock %}

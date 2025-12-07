@@ -312,12 +312,19 @@ templates/
 - [x] Photo gallery placeholder (`/member/gallery`)
 - [x] Updated navbar with Member Login / My Portal links
 
-### Next Up - Phase 4.2: Member Portal Visual Polish
-- [ ] **Make the member portal look WAY cooler!**
-  - Add real baseball imagery and backgrounds
-  - Custom graphics for At Bat, On Deck, In the Hole positions
-  - Fun baseball-themed styling throughout
-  - Make it impressive and engaging for members
+### Next Up - Phase 4.2: Member Portal Visual Polish ✅ COMPLETE
+- [x] **Make the member portal look WAY cooler!**
+  - [x] Added "Stadium Theme" with custom CSS (`stadium-theme.css`)
+  - [x] Real textures: Grass background, Brushed Metal, Wood Grain, Paper
+  - [x] Custom fonts: `Graduate` (Jersey), `Share Tech Mono` (Scoreboard), `Roboto Condensed`
+  - [x] **Dashboard:** 2-column layout with "Player Card" and "Scoreboard"
+  - [x] **Lineup:** "Clipboard" style list with wood header
+  - [x] **Stats:** "Box Score" paper style with grid layout
+
+### Next Up - Phase 4.3: Photo Gallery
+- [ ] Photo upload functionality
+- [ ] Gallery view
+- [ ] Mobile optimization for photos
 
 ---
 

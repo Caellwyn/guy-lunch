@@ -141,6 +141,25 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+@member_bp.route('/dev-login')
+def dev_login():
+    """Backdoor for development to skip email."""
+    if not current_app.debug:
+        return "Not available in production", 403
+    
+    # Log in as the first member found
+    member = Member.query.first()
+    if not member:
+        return "No members found in database", 404
+        
+    session['member_id'] = member.id
+    session['member_name'] = member.name
+    session.permanent = True
+    
+    flash(f'Dev Login Successful as {member.name}', 'success')
+    return redirect(url_for('member.dashboard'))
+
+
 # ============== MEMBER DASHBOARD ==============
 
 def get_next_tuesday():
