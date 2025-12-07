@@ -27,7 +27,7 @@ This app automates the entire weekly workflow for a recurring Tuesday lunch grou
 - **Frontend:** Flask templates + Tailwind CSS
 - **Email:** Brevo
 - **Maps:** Google Places API
-- **Hosting:** Railway/Render
+- **Hosting:** Railway
 
 ## Getting Started
 

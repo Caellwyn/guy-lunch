@@ -24,7 +24,7 @@ def create_app(config_name=None):
     # Admin password for simple auth (MVP)
     app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'lunch-admin-2024')
     
-    # Fix for Render's postgres:// vs postgresql://
+    # Fix for postgres:// vs postgresql:// (some providers use older postgres:// format)
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace(
             'postgres://', 'postgresql://', 1
@@ -43,8 +43,8 @@ def create_app(config_name=None):
     # Import models so they're known to Flask-Migrate
     from app import models
     
-    # Auto-run migrations in production
-    if os.environ.get('RENDER'):
+    # Auto-run migrations in production (Railway)
+    if os.environ.get('RAILWAY_ENVIRONMENT'):
         with app.app_context():
             upgrade()
     

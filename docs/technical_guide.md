@@ -6,18 +6,18 @@
 
 ## Infrastructure
 
-### Hosting (Render)
+### Hosting (Railway)
 - **Project:** Linked to GitHub repo `Caellwyn/guy-lunch` (auto-deploy on push to main)
 - **PostgreSQL:** Connected database, ready for schema initialization
-- **Web Service:** Live and deployed ✅
-- **Start Command:** `gunicorn run:app`
+- **Web Service:** Deploying to Railway
+- **Start Command:** `gunicorn run:app` (via Procfile)
 
 ### External Services
 | Service | Purpose | Status |
 |---------|---------|--------|
-| Render PostgreSQL | Primary database | ✅ Connected |
-| Render Web Service | Flask app hosting | ✅ Deployed |
-| Brevo | Transactional email (templates + API) | ⏳ Not configured |
+| Railway PostgreSQL | Primary database | ⏳ Setting up |
+| Railway Web Service | Flask app hosting | ⏳ Setting up |
+| Brevo | Transactional email (templates + API) | ⏳ API key added |
 | Google Places API | Location search/details | ⏳ Not configured |
 
 ---
@@ -56,7 +56,7 @@ guy-lunch/
 ├── migrations/             # Alembic migrations
 │   └── versions/           # Migration scripts
 ├── run.py                  # Application entry point
-├── render.yaml             # Render Blueprint (IaC)
+├── Procfile                # Railway/Heroku start command
 ├── requirements.txt        # Python dependencies
 └── instance/               # SQLite dev database (gitignored)
 ```
@@ -184,12 +184,12 @@ templates/
 
 | Variable | Purpose | Source |
 |----------|---------|--------|
-| `DATABASE_URL` | PostgreSQL connection string | Render dashboard |
+| `DATABASE_URL` | PostgreSQL connection string | Railway dashboard |
 | `SECRET_KEY` | Flask session encryption | Generate: `python -c "import secrets; print(secrets.token_hex(32))"` |
 | `BREVO_API_KEY` | Email API | Brevo dashboard |
 | `GOOGLE_PLACES_API_KEY` | Location search | Google Cloud Console |
 | `ADMIN_PASSWORD_HASH` | Admin login | Generate with bcrypt |
-| `APP_URL` | Base URL for email links | Render URL |
+| `APP_URL` | Base URL for email links | Railway URL |
 
 ---
 
@@ -198,16 +198,16 @@ templates/
 ### Completed - Phase 0 ✅
 - [x] Repository setup with .gitignore, .env.example
 - [x] Documentation structure established (4-doc system)
-- [x] Render project linked with PostgreSQL
+- [x] Railway project linked with PostgreSQL
 - [x] Flask app skeleton created (app factory pattern)
 - [x] All 7 database models implemented
 - [x] Initial migration created and applied locally
 - [x] Templates with Tailwind CSS (base.html, index.html)
 - [x] Health check endpoint (/health)
-- [x] Deployed to Render (live!)
+- [x] Deployed to Railway (live!)
 
 ### Completed - Phase 1 (Partial) ✅
-- [x] Auto-migration on Render deployment
+- [x] Auto-migration on Railway deployment
 - [x] Admin authentication (password-based)
 - [x] Secretary dashboard with quick actions
 - [x] Attendance tracking interface (mobile-first)

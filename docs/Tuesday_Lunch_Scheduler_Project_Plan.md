@@ -85,7 +85,7 @@ A custom web application that automates the entire weekly workflow:
 **Backend:**
 - **Framework:** Python Flask or Node.js/Express
 - **Database:** PostgreSQL (for analytics) or SQLite (for simplicity)
-- **Hosting:** Railway, Render, or Heroku
+- **Hosting:** Railway
 - **Image Storage:** Local filesystem (MVP) → AWS S3/Cloudflare R2 (production)
 
 **Frontend (MOBILE-FIRST):**
@@ -249,7 +249,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 - [ ] **Accounts created:**
   - GitHub account (for code repository)
-  - Railway/Render/Heroku account (for hosting - can do during Phase 0)
+  - Railway account (for hosting - can do during Phase 0)
   - Brevo account (for emails - can do during Phase 0)
   - Google Cloud account (for Places API - can wait until Phase 3)
 
@@ -305,7 +305,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - Test database connection
 
 - [ ] **Deploy basic "Hello World" app**
-  - Create Railway/Render/Heroku account
+  - Create Railway account
   - Deploy skeleton app
   - Set up environment variables in hosting platform
   - Verify deployment works
@@ -1280,7 +1280,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 ### 5.3: Deployment & Training (2 hours)
 
 - [ ] **Production deployment**
-  - Deploy latest code to production (Railway/Render/Heroku)
+  - Deploy latest code to production (Railway)
   - Set up production database (if not already done)
   - Run migrations on production database
   - Load production seed data (real 25 members, real locations)

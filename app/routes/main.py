@@ -11,5 +11,5 @@ def index():
 
 @main_bp.route('/health')
 def health():
-    """Health check endpoint for Render."""
+    """Health check endpoint for Railway."""
     return {'status': 'healthy', 'app': 'Tuesday Lunch Scheduler'}

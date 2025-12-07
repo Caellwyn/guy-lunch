@@ -9,8 +9,8 @@ See `technical_guide.md` for current app architecture
 
 ## Available Tools
 
-### Render CLI
-- Deployed services accessible via `render` CLI
+### Railway CLI
+- Deployed services accessible via `railway` CLI
 - **Project:** Linked to this repository's remote (auto-deploy on push)
 - **PostgreSQL database:** Connected and ready for initialization
 - Use for deployments, database operations, and service management
@@ -77,7 +77,7 @@ PLAN → CODE → TEST → DOCUMENT → COMMIT
 
 ### Tech Stack
 - Backend: Python Flask
-- Database: PostgreSQL (via Render)
+- Database: PostgreSQL (via Railway)
 - Frontend: Flask templates + Tailwind CSS
 - Email: Brevo
 - Maps: Google Places API
