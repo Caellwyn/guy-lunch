@@ -68,3 +68,5 @@ node_modules/
 # Secrets
 *.pem
 *.key
+docs/technical_guide.md
+docs/Tuesday_Lunch_Scheduler_Project_Plan.md
