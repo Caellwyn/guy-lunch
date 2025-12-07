@@ -79,7 +79,7 @@ PLAN → CODE → TEST → DOCUMENT → COMMIT
 - Backend: Python Flask
 - Database: PostgreSQL (via Render)
 - Frontend: Flask templates + Tailwind CSS
-- Email: SendGrid
+- Email: Brevo
 - Maps: Google Places API
 
 ### Current Phase
@@ -89,7 +89,7 @@ PLAN → CODE → TEST → DOCUMENT → COMMIT
 - ✅ Email templates with preview system (`/admin/emails`)
 
 **Ready for Phase 2 - Email Automation**
-- SendGrid integration
+- Brevo integration
 - Scheduled email jobs
 - Host confirmation flow
 
@@ -103,7 +103,7 @@ DATABASE_URL
 SECRET_KEY
 ADMIN_PASSWORD_HASH
 APP_URL
-SENDGRID_API_KEY
+BREVO_API_KEY
 GOOGLE_PLACES_API_KEY
 ```
 

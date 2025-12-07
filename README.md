@@ -25,7 +25,7 @@ This app automates the entire weekly workflow for a recurring Tuesday lunch grou
 - **Backend:** Python Flask
 - **Database:** PostgreSQL
 - **Frontend:** Flask templates + Tailwind CSS
-- **Email:** SendGrid
+- **Email:** Brevo
 - **Maps:** Google Places API
 - **Hosting:** Railway/Render
 
@@ -66,7 +66,7 @@ flask run
 
 ```
 DATABASE_URL=postgresql://...
-SENDGRID_API_KEY=SG...
+BREVO_API_KEY=xkeysib-...
 GOOGLE_PLACES_API_KEY=AIza...
 ADMIN_PASSWORD=your-admin-password
 SECRET_KEY=random-string...

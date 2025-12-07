@@ -97,7 +97,7 @@ A custom web application that automates the entire weekly workflow:
 - **Image handling:** Client-side compression before upload
 
 **External Services:**
-- **Email:** SendGrid (free tier: 100 emails/day)
+- **Email:** Brevo (free tier: 300 emails/day)
 - **Maps:** Google Places API + Google Maps Static API
 - **Scheduling:** APScheduler or cron jobs
 - **Image optimization:** PIL/Pillow for thumbnails
@@ -250,7 +250,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - [ ] **Accounts created:**
   - GitHub account (for code repository)
   - Railway/Render/Heroku account (for hosting - can do during Phase 0)
-  - SendGrid account (for emails - can do during Phase 0)
+  - Brevo account (for emails - can do during Phase 0)
   - Google Cloud account (for Places API - can wait until Phase 3)
 
 - [ ] **Tools installed:**
@@ -295,7 +295,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - SECRET_KEY (generate random string)
   - ADMIN_PASSWORD_HASH (generate bcrypt hash)
   - APP_URL (localhost for now)
-  - SENDGRID_API_KEY (will get in later step)
+  - BREVO_API_KEY (will get in later step)
   - GOOGLE_PLACES_API_KEY (will get in Phase 3)
 
 - [ ] **Choose and configure database**
@@ -311,7 +311,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - Verify deployment works
   - Set up continuous deployment from GitHub
 
-- [ ] **Set up SendGrid account**
+- [ ] **Set up Brevo account**
   - Create account (free tier)
   - Verify sender email (use your domain or personal email)
   - Get API key
@@ -321,7 +321,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 ### Testable Milestones
 - ✓ App accessible at live URL (shows "Hello World")
 - ✓ Database connection works (can execute simple query)
-- ✓ Can send test email via SendGrid (check inbox)
+- ✓ Can send test email via Brevo (check inbox)
 - ✓ Environment variables properly configured locally and in production
 - ✓ Git repository has initial commit
 - ✓ Continuous deployment works (push to GitHub triggers deploy)
@@ -490,7 +490,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
   - Desktop/mobile preview toggle
   - Add "The AI Guy" branding footer
 
-- [ ] **Manual send capability** (deferred to Phase 2 - requires SendGrid)
+- [ ] **Manual send capability** (deferred to Phase 2 - requires Brevo)
   - Secretary can trigger send from dashboard
   - Select email type
   - Preview before send
@@ -501,7 +501,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - ✓ Templates look professional on mobile
 - ✓ Can preview emails with real data
 - ✓ Branding footer displays correctly
-- ⏳ Manual send via SendGrid (Phase 2)
+- ⏳ Manual send via Brevo (Phase 2)
 
 ### 1.5: Basic Member Management (1 hour)
 
@@ -552,7 +552,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
     3. Create or update lunch record for next Tuesday (status='planned')
     4. Generate unique confirmation token
     5. Create email with host name, date, confirmation link
-    6. Send via SendGrid
+    6. Send via Brevo
     7. Log email sent (save to database)
   - Test: Run function manually, verify email received
   - Test: Check lunch record created in database
@@ -582,7 +582,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
     3. For location: get rating, last visit date, average attendance
     4. Generate Google Maps embed URL for location
     5. Create email with all details
-    6. Send to all active members (batch send via SendGrid)
+    6. Send to all active members (batch send via Brevo)
     7. Log emails sent
   - Test: Run function, verify email sent to all members
   - Test: Check maps embed displays correctly in email
@@ -669,8 +669,8 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 - [ ] **Log all sent emails**
   - Record in database
-  - Track SendGrid message ID
-  - Handle SendGrid webhooks (optional)
+  - Track Brevo message ID
+  - Handle Brevo webhooks (optional)
 
 - [ ] **Display in dashboard**
   - Recent emails sent
@@ -1165,7 +1165,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - [ ] **Error handling review**
   - Review all user-facing forms for validation
   - Add try/catch blocks around database operations
-  - Add try/catch around external API calls (SendGrid, Google Places)
+  - Add try/catch around external API calls (Brevo, Google Places)
   - Implement error logging (to file or service like Sentry)
   - Test error scenarios: invalid email, failed upload, database error
   - Ensure friendly error messages (not stack traces) shown to users
@@ -1422,7 +1422,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 **Risk:** Email delivery issues (spam filters)  
 **Mitigation:**
-- Use SendGrid with verified domain
+- Use Brevo with verified domain
 - Keep email content professional
 - Avoid spam trigger words
 - Implement SPF/DKIM records
@@ -1527,7 +1527,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 ### Scaling Considerations
 - If group grows beyond 50 members: optimize database queries
 - If photo storage exceeds 10GB: migrate to S3/R2
-- If email volume exceeds SendGrid free tier: upgrade plan or switch provider
+- If email volume exceeds Brevo free tier: upgrade plan or switch provider
 - Consider caching layer (Redis) for frequently accessed data
 
 ---
@@ -1538,7 +1538,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - **Why Flask over Django?** Simpler, faster for small project. Don't need admin panel since building custom UI.
 - **Why PostgreSQL over SQLite?** Better for analytics queries, more production-ready, easy to scale.
 - **Why Tailwind over Bootstrap?** More modern, better for custom design, smaller bundle size, excellent mobile-first utilities.
-- **Why SendGrid over AWS SES?** Simpler API, better free tier, easier setup for small volume.
+- **Why Brevo over AWS SES?** Simpler API, better free tier, easier setup for small volume.
 - **Why mobile-first?** Users are contractors/business owners who live on their phones, not at desks. Photo uploads happen at restaurants. Desktop is secondary use case.
 - **Why local storage then S3?** Start simple for MVP, migrate to S3 when storage needs grow. Premature optimization wastes time.
 - **Why client-side image compression?** Save bandwidth on mobile uploads, reduce server load, better UX (faster uploads on cellular).
@@ -1615,7 +1615,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - **Check:** Does this feature need to be perfect for MVP?
 
 **12. Neglecting error handling**
-- **Problem:** App crashes when SendGrid is down or file upload fails
+- **Problem:** App crashes when Brevo is down or file upload fails
 - **Solution:** Add try/catch blocks and user-friendly error messages
 - **When:** Add basic error handling as you code, comprehensive review in Phase 5
 
@@ -1643,7 +1643,7 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 ### Environment Variables Needed
 ```
 DATABASE_URL=postgresql://...
-SENDGRID_API_KEY=SG...
+BREVO_API_KEY=SG...
 GOOGLE_PLACES_API_KEY=AIza...
 ADMIN_PASSWORD_HASH=bcrypt...
 SECRET_KEY=random-string...

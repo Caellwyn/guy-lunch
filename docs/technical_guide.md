@@ -115,7 +115,7 @@ guy-lunch/
 
 | Service | File | Purpose |
 |---------|------|---------|
-| email | `email_service.py` | SendGrid integration, all email sending |
+| email | `email_service.py` | Brevo integration, all email sending |
 | scheduler | `scheduler.py` | APScheduler jobs for automated emails |
 | places | `places_service.py` | Google Places API integration |
 | hosting | `hosting_service.py` | Host rotation logic, queue management |
@@ -186,7 +186,7 @@ templates/
 |----------|---------|--------|
 | `DATABASE_URL` | PostgreSQL connection string | Render dashboard |
 | `SECRET_KEY` | Flask session encryption | Generate: `python -c "import secrets; print(secrets.token_hex(32))"` |
-| `SENDGRID_API_KEY` | Email API | SendGrid dashboard |
+| `BREVO_API_KEY` | Email API | Brevo dashboard |
 | `GOOGLE_PLACES_API_KEY` | Location search | Google Cloud Console |
 | `ADMIN_PASSWORD_HASH` | Admin login | Generate with bcrypt |
 | `APP_URL` | Base URL for email links | Render URL |
