@@ -15,10 +15,10 @@
 ### External Services
 | Service | Purpose | Status |
 |---------|---------|--------|
-| Railway PostgreSQL | Primary database | ⏳ Setting up |
-| Railway Web Service | Flask app hosting | ⏳ Setting up |
-| Brevo | Transactional email (templates + API) | ⏳ API key added |
-| Google Places API | Location search/details | ⏳ Not configured |
+| Railway PostgreSQL | Primary database | ✅ Connected |
+| Railway Web Service | Flask app hosting | ✅ Deployed |
+| Brevo | Transactional email (templates + API) | ✅ Configured |
+| Google Places API | Location search/details | ✅ Integrated |
 
 ---
 
@@ -46,7 +46,9 @@ guy-lunch/
 │   │   └── photo.py        # Photo & PhotoTag models
 │   ├── routes/             # Route blueprints
 │   │   ├── __init__.py
-│   │   └── main.py         # Main routes (/, /health)
+│   │   ├── main.py         # Main routes (/, /health, /confirm)
+│   │   ├── admin.py        # Admin/secretary routes
+│   │   └── api.py          # JSON API endpoints
 │   ├── services/           # Business logic (empty, ready for use)
 │   ├── templates/          # Jinja2 templates
 │   │   ├── base.html       # Base layout with Tailwind
@@ -91,10 +93,14 @@ guy-lunch/
 
 | Blueprint | File | Purpose |
 |-----------|------|---------|
+| main | `main.py` | Public routes: home, health, host confirmation |
 | admin | `admin.py` | Secretary dashboard, attendance tracking, setup/import |
-| public | `public.py` | Host confirmation, rating submission |
-| member | `member.py` | Member portal, photo gallery |
-| api | `api.py` | JSON endpoints (if needed) |
+| api | `api.py` | JSON endpoints for Places search, etc. |
+
+**API Routes (Implemented):**
+- `/api/places/search?q=<query>` - Search restaurants via Google Places
+- `/api/places/<place_id>` - Get full details for a place
+- `/api/places/status` - Check if Google Places API is configured
 
 **Admin Routes (Implemented):**
 - `/admin/login` - Password authentication
@@ -239,10 +245,19 @@ templates/
 - [ ] Railway cron service setup (jobs are manual-only for now)
 - [ ] Testing with real emails before enabling automation
 
-### Future - Phase 3: Location Management & Ratings
-1. Location database with Google Places integration
-2. Rating collection after each lunch
-3. Location analytics and recommendations
+### In Progress - Phase 3: Location Management & Ratings
+- [x] Google Places API integration (`app/services/places_service.py`)
+  - Place Autocomplete (search as you type)
+  - Place Details (full info for selected place)
+  - Location bias for Longview, WA area
+- [x] API endpoints for frontend (`app/routes/api.py`)
+- [x] Enhanced host confirmation page with autocomplete
+  - Search for restaurants by name
+  - Auto-populate address, phone, rating, price, cuisine
+  - Fallback to manual entry if needed
+  - Prevents duplicate locations via google_place_id
+- [ ] Rating submission page and system
+- [ ] Location management dashboard
 
 ---
 
@@ -264,4 +279,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 7, 2025 - Phase 2 Complete (Email Automation)*
+*Last Updated: December 6, 2025 - Phase 3 In Progress (Google Places Integration)*

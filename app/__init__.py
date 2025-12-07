@@ -37,8 +37,10 @@ def create_app(config_name=None):
     # Register blueprints
     from app.routes.main import main_bp
     from app.routes.admin import admin_bp
+    from app.routes.api import api_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(api_bp)
     
     # Import models so they're known to Flask-Migrate
     from app import models

@@ -92,6 +92,12 @@ def submit_confirmation(token):
         new_phone = request.form.get('new_location_phone', '').strip()
         group_friendly = request.form.get('group_friendly') == 'on'
 
+        # Google Places data (optional)
+        google_place_id = request.form.get('google_place_id', '').strip()
+        google_rating = request.form.get('google_rating', '').strip()
+        price_level = request.form.get('price_level', '').strip()
+        cuisine_type = request.form.get('cuisine_type', '').strip()
+
         if not new_name:
             flash('Please enter a restaurant name.', 'error')
             return redirect(url_for('main.confirm_host', token=token))
@@ -100,23 +106,39 @@ def submit_confirmation(token):
             flash('Please confirm the restaurant can accommodate our group.', 'error')
             return redirect(url_for('main.confirm_host', token=token))
 
-        # Create new location
-        location = Location(
-            name=new_name,
-            address=new_address or None,
-            phone=new_phone or None,
-            group_friendly=True,
-            visit_count=0
-        )
-        db.session.add(location)
-        db.session.flush()  # Get the ID
+        # Check if location with this Google Place ID already exists
+        existing_location = None
+        if google_place_id:
+            existing_location = Location.query.filter_by(google_place_id=google_place_id).first()
+
+        if existing_location:
+            # Use existing location instead of creating duplicate
+            location = existing_location
+        else:
+            # Create new location with Google Places data
+            location = Location(
+                name=new_name,
+                address=new_address or None,
+                phone=new_phone or None,
+                google_place_id=google_place_id or None,
+                google_rating=float(google_rating) if google_rating else None,
+                price_level=int(price_level) if price_level else None,
+                cuisine_type=cuisine_type or None,
+                group_friendly=True,
+                visit_count=0
+            )
+            db.session.add(location)
+            db.session.flush()  # Get the ID
 
         # Update lunch record
         lunch.location_id = location.id
         lunch.reservation_confirmed = True
         db.session.commit()
 
-        flash(f'Confirmed! You added {location.name} as a new location.', 'success')
+        if existing_location:
+            flash(f'Confirmed! You selected {location.name}.', 'success')
+        else:
+            flash(f'Confirmed! You added {location.name} as a new location.', 'success')
         return render_template('public/confirmation_success.html',
                                lunch=lunch,
                                location=location)

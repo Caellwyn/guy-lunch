@@ -22,8 +22,8 @@ APScheduler>=3.10.4
 # Image processing
 Pillow>=10.2.0
 
-# Google Places (for later)
-googlemaps>=4.10.0
+# Google Places API
+requests>=2.31.0
 
 # Maps & Charts (for later)
 folium>=0.15.1
