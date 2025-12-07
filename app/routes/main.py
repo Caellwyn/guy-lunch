@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
-from app.models import Lunch, Location, Member
+from app.models import Lunch, Location, Member, Rating
 
 main_bp = Blueprint('main', __name__)
 
@@ -146,3 +146,107 @@ def submit_confirmation(token):
     else:
         flash('Invalid selection.', 'error')
         return redirect(url_for('main.confirm_host', token=token))
+
+
+# ============== RATING SUBMISSION FLOW ==============
+
+@main_bp.route('/rate/<token>')
+def rate_lunch(token):
+    """Rating submission page - rate a lunch you attended."""
+    # Find the rating record by token
+    rating = Rating.query.filter_by(rating_token=token).first()
+
+    if not rating:
+        flash('Invalid or expired rating link.', 'error')
+        return render_template('public/invalid_token.html')
+
+    # Check if already rated
+    if rating.rating is not None:
+        lunch = Lunch.query.get(rating.lunch_id)
+        location = Location.query.get(lunch.location_id) if lunch else None
+        return render_template('public/already_rated.html',
+                               rating=rating,
+                               lunch=lunch,
+                               location=location)
+
+    # Get lunch and location details
+    lunch = Lunch.query.get(rating.lunch_id)
+    if not lunch:
+        flash('Lunch record not found.', 'error')
+        return render_template('public/invalid_token.html')
+
+    location = Location.query.get(lunch.location_id) if lunch.location_id else None
+    if not location:
+        flash('Location not found.', 'error')
+        return render_template('public/invalid_token.html')
+
+    host = Member.query.get(lunch.host_id) if lunch.host_id else None
+
+    return render_template('public/rate.html',
+                           lunch=lunch,
+                           location=location,
+                           host=host,
+                           token=token)
+
+
+@main_bp.route('/rate/<token>', methods=['POST'])
+def submit_rating(token):
+    """Handle rating submission."""
+    rating_record = Rating.query.filter_by(rating_token=token).first()
+
+    if not rating_record:
+        flash('Invalid or expired rating link.', 'error')
+        return redirect(url_for('main.index'))
+
+    # Check if already rated
+    if rating_record.rating is not None:
+        flash('You have already submitted a rating for this lunch.', 'error')
+        lunch = Lunch.query.get(rating_record.lunch_id)
+        location = Location.query.get(lunch.location_id) if lunch else None
+        return render_template('public/already_rated.html',
+                               rating=rating_record,
+                               lunch=lunch,
+                               location=location)
+
+    # Get and validate rating
+    rating_value = request.form.get('rating')
+    comment = request.form.get('comment', '').strip()
+
+    if not rating_value:
+        flash('Please select a rating.', 'error')
+        return redirect(url_for('main.rate_lunch', token=token))
+
+    try:
+        rating_value = int(rating_value)
+        if rating_value < 1 or rating_value > 5:
+            raise ValueError("Rating out of range")
+    except ValueError:
+        flash('Invalid rating value.', 'error')
+        return redirect(url_for('main.rate_lunch', token=token))
+
+    # Save the rating
+    rating_record.rating = rating_value
+    rating_record.comment = comment if comment else None
+
+    # Update location's average rating
+    lunch = Lunch.query.get(rating_record.lunch_id)
+    if lunch and lunch.location_id:
+        location = Location.query.get(lunch.location_id)
+        if location:
+            # Calculate new average
+            all_ratings = Rating.query.join(Lunch).filter(
+                Lunch.location_id == location.id,
+                Rating.rating.isnot(None)
+            ).all()
+
+            if all_ratings:
+                avg = sum(r.rating for r in all_ratings) / len(all_ratings)
+                location.avg_group_rating = round(avg, 1)
+
+    db.session.commit()
+
+    # Show success page
+    location = Location.query.get(lunch.location_id) if lunch else None
+    return render_template('public/rating_success.html',
+                           rating=rating_record,
+                           location=location)

@@ -17,7 +17,7 @@ from datetime import date, timedelta, datetime
 from flask import current_app
 
 from app import db
-from app.models import Member, Lunch, Location, Attendance, EmailLog, Setting
+from app.models import Member, Lunch, Location, Attendance, EmailLog, Setting, Rating
 from app.services.email_service import email_service
 
 
@@ -421,9 +421,34 @@ def send_rating_requests(dry_run: bool = False) -> dict:
             if not member or not member.email:
                 continue
 
-            # Generate unique rating token for this member/lunch
+            # Check if rating already exists for this member/lunch
+            existing_rating = Rating.query.filter_by(
+                lunch_id=lunch.id,
+                member_id=member.id
+            ).first()
+
+            if existing_rating and existing_rating.rating is not None:
+                # Already rated, skip
+                continue
+
+            # Generate unique rating token
             rating_token = secrets.token_urlsafe(32)
-            rating_url = f"{app_url}/rate/{lunch.id}/{rating_token}"
+
+            # Create or update rating record with token (rating is NULL until submitted)
+            if existing_rating:
+                existing_rating.rating_token = rating_token
+            else:
+                new_rating = Rating(
+                    lunch_id=lunch.id,
+                    member_id=member.id,
+                    rating_token=rating_token,
+                    rating=None  # Will be set when user submits
+                )
+                db.session.add(new_rating)
+
+            db.session.commit()
+
+            rating_url = f"{app_url}/rate/{rating_token}"
 
             params = {
                 'MEMBER_NAME': member.name,

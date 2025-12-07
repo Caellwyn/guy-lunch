@@ -93,9 +93,15 @@ guy-lunch/
 
 | Blueprint | File | Purpose |
 |-----------|------|---------|
-| main | `main.py` | Public routes: home, health, host confirmation |
+| main | `main.py` | Public routes: home, health, host confirmation, ratings |
 | admin | `admin.py` | Secretary dashboard, attendance tracking, setup/import |
 | api | `api.py` | JSON endpoints for Places search, etc. |
+
+**Public Routes (Implemented):**
+- `/` - Home page
+- `/health` - Health check for Railway
+- `/confirm/<token>` - Host confirmation (select restaurant)
+- `/rate/<token>` - Rating submission (after lunch)
 
 **API Routes (Implemented):**
 - `/api/places/search?q=<query>` - Search restaurants via Google Places
@@ -249,7 +255,7 @@ templates/
 - [ ] Railway cron service setup (jobs are manual-only for now)
 - [ ] Testing with real emails before enabling automation
 
-### In Progress - Phase 3: Location Management & Ratings
+### Completed - Phase 3: Location Management & Ratings
 - [x] Google Places API integration (`app/services/places_service.py`)
   - Place Autocomplete (search as you type)
   - Place Details (full info for selected place)
@@ -265,7 +271,11 @@ templates/
   - Manual entry fallback
   - Edit/delete existing locations
   - View all location details (rating, price, visits)
-- [ ] Rating submission page and system
+- [x] Rating submission system (`/rate/<token>`)
+  - Token-based access (sent via email after lunch)
+  - 5-star rating with optional comments
+  - Auto-calculates location average rating
+  - Prevents duplicate submissions
 
 ---
 
@@ -287,4 +297,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 6, 2025 - Phase 3 In Progress (Locations Manager Complete)*
+*Last Updated: December 6, 2025 - Phase 3 Complete (Locations & Ratings)*
