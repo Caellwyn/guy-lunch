@@ -96,10 +96,11 @@ guy-lunch/
 | Blueprint | File | Purpose |
 |-----------|------|---------|
 | main | `main.py` | Public routes: home, health, host confirmation, ratings |
-| admin | `admin.py` | Secretary dashboard, attendance tracking, setup/import |
+| admin | `admin.py` | App admin dashboard, member/location management |
+| secretary | `secretary.py` | Secretary portal: attendance, hosting order |
 | api | `api.py` | JSON endpoints for Places search, etc. |
 | member | `member.py` | Member portal: auth, dashboard, lineup, history |
-| gallery | `gallery.py` | Photo gallery: upload, view, tagging, filtering |
+| gallery | `gallery.py` | Photo gallery (DISABLED): upload, view, tagging, filtering |
 
 **Public Routes (Implemented):**
 - `/` - Home page
@@ -130,11 +131,11 @@ guy-lunch/
 
 **Admin Routes (Implemented):**
 - `/admin/login` - Password authentication
-- `/admin/` - Secretary dashboard
-- `/admin/attendance/<date>` - Attendance tracking
-- `/admin/members` - Member management
+- `/admin/` - Admin dashboard
+- `/admin/members` - Member management + secretary assignment
 - `/admin/members/add` - Add member form
 - `/admin/members/<id>/edit` - Edit member
+- `/admin/members/set-secretary` - Assign secretary role (POST)
 - `/admin/hosting-queue` - View/manage hosting queue
 - `/admin/locations` - Location management
 - `/admin/locations/add` - Add location (POST)
@@ -145,6 +146,15 @@ guy-lunch/
 - `/admin/setup/export-template` - Download CSV template
 - `/admin/emails` - Email template hub
 - `/admin/emails/preview/<type>` - Preview email templates with sample data
+- `/admin/settings` - App settings
+
+**Secretary Routes (Implemented):**
+- `/secretary/` - Secretary dashboard (upcoming lunch, reservation info)
+- `/secretary/attendance` - Take attendance (simplified checklist)
+- `/secretary/hosting-order` - Drag-and-drop hosting queue management
+- `/secretary/hosting-order/reorder` - Save new order (AJAX)
+- `/secretary/hosting-order/auto-organize` - Reset to default order (AJAX)
+- `/secretary/transfer` - Transfer secretary role to another member
 
 ### Services Layer
 **Location:** `app/services/`
@@ -205,12 +215,14 @@ templates/
 ## Key Algorithms
 
 ### Host Rotation Queue
-**Location:** `app/services/hosting_service.py`
-**Logic:** 
-1. Track `attendance_since_hosting` for each member
+**Location:** `app/services/email_jobs.py` (`get_hosting_queue()`)
+**Logic:**
+1. Track `attendance_since_hosting` for each member (actual attendance count)
 2. Increment counter when member attends but doesn't host
 3. Reset to 0 when member hosts
-4. Next host = member with highest counter (ties broken alphabetically)
+4. Optional `queue_position` field for manual secretary override
+5. Sorting: `queue_position` first (if set), then `attendance_since_hosting` DESC
+6. "Auto-organize" clears all `queue_position` values, reverting to natural order
 
 ### Automated Email Schedule
 **Location:** `app/services/scheduler.py`
@@ -385,7 +397,38 @@ templates/
 - [x] Show member's uploaded photos and tagged photos on profile
 - [x] Member names link to profiles throughout app (dashboard, lineup)
 
-### Next Up - Phase 4.6 (Optional)
+### DISABLED - Photo Gallery (December 2024)
+Photo sharing functionality disabled per member feedback. Code preserved but blueprint unregistered.
+- Gallery routes commented out in `app/__init__.py`
+- Gallery links removed from member dashboard and profile pages
+- Admin photo management still functional at `/admin/photos`
+- To re-enable: uncomment gallery_bp import and registration in `app/__init__.py`
+
+### Completed - Phase 4.6: Admin/Secretary Role Separation (December 2024)
+- [x] **Separate Secretary Portal** (`/secretary/`)
+  - Simplified dashboard with restaurant phone number for reservations
+  - Attendance tracking (checkbox list, add guests)
+  - Drag-and-drop hosting order management
+  - Auto-organize button to reset to default order
+  - Transfer secretary role to another member (with confirmation)
+- [x] **Hosting Queue Improvements**
+  - Added `queue_position` field for manual ordering
+  - `attendance_since_hosting` preserved as actual count (never modified by dragging)
+  - Central `get_hosting_queue()` function used everywhere
+  - Auto-organize clears manual overrides
+- [x] **Role-Based Navigation**
+  - Nav shows links based on session flags (member, secretary, admin)
+  - Secretary sees yellow "Secretary" link when logged in
+  - Admin link only shown when admin authenticated
+- [x] **Secretary Assignment**
+  - Moved from Settings to Members page
+  - Secretary can transfer role to another member
+  - Confirmation required to prevent accidental transfers
+- [x] **Bug Fixes**
+  - Fixed restaurant selection visual feedback on host confirmation page
+  - Fixed dev-login preserving admin authentication
+
+### Next Up - Phase 4.7 (Optional)
 - [ ] PWA Features (service worker, manifest, offline capability)
 - [ ] Railway cron service setup for automated emails
 
@@ -409,4 +452,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: January 2025 - Phase 4.3 Complete (Photo Gallery with Tagging & R2 Storage)*
+*Last Updated: December 2024 - Phase 4.6 Complete (Admin/Secretary Role Separation)*

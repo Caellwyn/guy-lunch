@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 import secrets
 
 from app import db
-from app.models import Member, Lunch, Attendance, Location, Rating
+from app.models import Member, Lunch, Attendance, Location, Rating, Setting
 
 member_bp = Blueprint('member', __name__, url_prefix='/member')
 
@@ -24,7 +24,7 @@ def is_local_development():
 
 def member_required(f):
     """Decorator to require member authentication.
-    
+
     In local development (debug mode), auto-logs in as first member if not authenticated.
     """
     @wraps(f)
@@ -34,9 +34,7 @@ def member_required(f):
             if is_local_development():
                 member = Member.query.filter_by(email='caellwyn@gmail.com').first() or Member.query.first()
                 if member:
-                    session['member_id'] = member.id
-                    session['member_name'] = member.name
-                    session.permanent = True
+                    set_member_session(member)
                 else:
                     return redirect(url_for('member.login', next=request.url))
             else:
@@ -51,6 +49,22 @@ def get_current_member():
     if member_id:
         return Member.query.get(member_id)
     return None
+
+
+def set_member_session(member):
+    """Set session variables for a logged-in member."""
+    session['member_id'] = member.id
+    session['member_name'] = member.name
+    session.permanent = True
+
+    # Check if this member is the secretary
+    secretary_id = Setting.get('secretary_member_id')
+    is_secretary = bool(secretary_id and int(secretary_id) == member.id)
+    session['is_secretary'] = is_secretary
+
+    # Debug logging
+    from flask import current_app
+    current_app.logger.info(f"set_member_session: member={member.id}, secretary_id={secretary_id}, is_secretary={is_secretary}")
 
 
 @member_bp.route('/login', methods=['GET', 'POST'])
@@ -134,9 +148,7 @@ def authenticate(token):
         return redirect(url_for('member.login'))
 
     # Success! Log in the member
-    session['member_id'] = member.id
-    session['member_name'] = member.name
-    session.permanent = True
+    set_member_session(member)
 
     # Clean up used token (single-use)
     member.magic_link_token = None
@@ -145,8 +157,11 @@ def authenticate(token):
 
     flash(f'Welcome back, {member.name}!', 'success')
 
-    # Redirect to original destination or dashboard
-    next_url = request.args.get('next') or url_for('member.dashboard')
+    # Redirect to secretary dashboard if they're the secretary, otherwise member dashboard
+    if session.get('is_secretary'):
+        next_url = request.args.get('next') or url_for('secretary.dashboard')
+    else:
+        next_url = request.args.get('next') or url_for('member.dashboard')
     return redirect(next_url)
 
 
@@ -155,6 +170,7 @@ def logout():
     """Log out member."""
     session.pop('member_id', None)
     session.pop('member_name', None)
+    session.pop('is_secretary', None)
     flash('You have been logged out.', 'success')
     return redirect(url_for('main.index'))
 
@@ -165,19 +181,30 @@ def dev_login():
     if not current_app.debug:
         return "Not available in production", 403
 
-    # Clear any existing session first
-    session.clear()
+    # Preserve admin authentication if present
+    was_admin = session.get('admin_authenticated')
+
+    # Clear member session (but not admin)
+    session.pop('member_id', None)
+    session.pop('member_name', None)
+    session.pop('is_secretary', None)
 
     # Log in as Josh Johnson (or first member as fallback)
     member = Member.query.filter_by(email='caellwyn@gmail.com').first() or Member.query.first()
     if not member:
         return "No members found in database", 404
 
-    session['member_id'] = member.id
-    session['member_name'] = member.name
-    session.permanent = True
+    set_member_session(member)
+
+    # Restore admin authentication
+    if was_admin:
+        session['admin_authenticated'] = True
 
     flash(f'Dev Login Successful as {member.name}', 'success')
+
+    # Redirect to secretary dashboard if they're the secretary
+    if session.get('is_secretary'):
+        return redirect(url_for('secretary.dashboard'))
     return redirect(url_for('member.dashboard'))
 
 
@@ -197,10 +224,8 @@ def calculate_hosting_position(member):
     Calculate member's position in the hosting queue.
     Returns (position, total_in_queue).
     """
-    queue = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).all()
+    from app.services.email_jobs import get_hosting_queue
+    queue = get_hosting_queue(limit=100)
 
     for i, m in enumerate(queue):
         if m.id == member.id:
@@ -230,10 +255,8 @@ def get_baseball_lineup():
     Get the hosting lineup in baseball batting order style.
     Returns dict with 'at_bat', 'on_deck', 'in_hole', 'dugout' lists.
     """
-    queue = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).all()
+    from app.services.email_jobs import get_hosting_queue
+    queue = get_hosting_queue(limit=100)
 
     lineup = {
         'at_bat': queue[0] if len(queue) > 0 else None,

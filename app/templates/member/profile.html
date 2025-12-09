@@ -110,55 +110,7 @@
         {% endif %}
     </div>
 
-    <!-- Photos Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <!-- Photos Uploaded -->
-        <div class="texture-paper p-6 rounded-lg">
-            <h2 class="font-jersey text-2xl text-gray-800 mb-4 flex items-center gap-2">
-                <span>Photos by {{ profile_member.name.split()[0] }}</span>
-            </h2>
-
-            {% if uploaded_photos %}
-                <div class="grid grid-cols-3 gap-2">
-                    {% for photo in uploaded_photos %}
-                        <a href="{{ url_for('gallery.index') }}?photo={{ photo.id }}" class="block aspect-square">
-                            <img src="{{ photo.file_url }}" alt="Photo" class="w-full h-full object-cover rounded shadow hover:opacity-80 transition-opacity">
-                        </a>
-                    {% endfor %}
-                </div>
-                <a href="{{ url_for('gallery.index') }}?uploader={{ profile_member.id }}"
-                   class="block mt-4 text-center text-blue-600 font-condensed hover:underline">
-                    View all photos →
-                </a>
-            {% else %}
-                <p class="text-gray-500 italic font-condensed text-center py-8">No photos uploaded yet</p>
-            {% endif %}
-        </div>
-
-        <!-- Photos Tagged In -->
-        <div class="texture-paper p-6 rounded-lg">
-            <h2 class="font-jersey text-2xl text-gray-800 mb-4 flex items-center gap-2">
-                <span>Photos with {{ profile_member.name.split()[0] }}</span>
-            </h2>
-
-            {% if tagged_photos %}
-                <div class="grid grid-cols-3 gap-2">
-                    {% for photo in tagged_photos %}
-                        <a href="{{ url_for('gallery.index') }}?photo={{ photo.id }}" class="block aspect-square">
-                            <img src="{{ photo.file_url }}" alt="Photo" class="w-full h-full object-cover rounded shadow hover:opacity-80 transition-opacity">
-                        </a>
-                    {% endfor %}
-                </div>
-                <a href="{{ url_for('gallery.index') }}?tagged={{ profile_member.id }}"
-                   class="block mt-4 text-center text-blue-600 font-condensed hover:underline">
-                    View all photos →
-                </a>
-            {% else %}
-                <p class="text-gray-500 italic font-condensed text-center py-8">Not tagged in any photos yet</p>
-            {% endif %}
-        </div>
-    </div>
+    {# Photo gallery section disabled per member feedback (December 2024) #}
 
 </div>
 {% endblock %}

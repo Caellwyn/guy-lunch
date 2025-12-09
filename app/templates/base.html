@@ -46,14 +46,17 @@
                 <div class="flex items-center space-x-4">
                     {% if session.get('member_id') %}
                         <a href="{{ url_for('member.dashboard') }}" class="hover:text-yellow-300 font-condensed">My Portal</a>
-                        {% if session.get('admin_authenticated') %}
-                            <a href="{{ url_for('admin.dashboard') }}" class="hover:text-yellow-300 font-condensed">Admin</a>
-                        {% else %}
-                            <a href="{{ url_for('admin.login') }}" class="hover:text-yellow-300 font-condensed text-white text-opacity-60">Admin</a>
-                        {% endif %}
+                    {% endif %}
+                    {% if session.get('is_secretary') %}
+                        <a href="{{ url_for('secretary.dashboard') }}" class="hover:text-yellow-300 font-condensed text-yellow-300">Secretary</a>
+                    {% endif %}
+                    {% if session.get('admin_authenticated') %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-yellow-300 font-condensed">Admin</a>
+                    {% endif %}
+                    {% if session.get('member_id') %}
                         <a href="{{ url_for('member.logout') }}" class="hover:text-yellow-300 text-sm font-condensed">Logout</a>
                     {% elif session.get('admin_authenticated') %}
-                        <a href="{{ url_for('admin.dashboard') }}" class="hover:text-yellow-300 font-condensed">Admin</a>
+                        <a href="{{ url_for('admin.logout') }}" class="hover:text-yellow-300 text-sm font-condensed">Logout</a>
                     {% endif %}
                 </div>
             </div>

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Take Attendance{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Take Attendance</h1>
+            <p class="text-gray-600">{{ lunch_date.strftime('%A, %B %d, %Y') }}</p>
+        </div>
+        <a href="{{ url_for('secretary.dashboard') }}" class="text-blue-600 hover:text-blue-800">
+            ← Back
+        </a>
+    </div>
+
+    <!-- Location Reminder -->
+    {% if location %}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-blue-800">
+                <span class="font-bold">Today's Location:</span> {{ location.name }}
+            </p>
+            {% if location.phone %}
+                <p class="text-blue-600 text-sm mt-1">Phone: {{ location.phone }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Attendance Form -->
+    <form action="{{ url_for('secretary.save_attendance') }}" method="POST" class="space-y-6">
+        <input type="hidden" name="lunch_date" value="{{ lunch_date.isoformat() }}">
+
+        <!-- Host Selection -->
+        <div class="bg-white rounded-lg shadow p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Who is hosting today?</label>
+            <select name="host_id" class="w-full px-4 py-3 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">-- Select Host --</option>
+                {% for member in members %}
+                    {% if member.member_type == 'regular' %}
+                        <option value="{{ member.id }}"
+                                {% if current_host and member.id == current_host.id %}selected{% endif %}>
+                            {{ member.name }}
+                            {% if current_host and member.id == current_host.id %}(scheduled){% endif %}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Member Checklist -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="font-semibold text-gray-900">Who attended?</h2>
+                <span id="attendee-count" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    0 selected
+                </span>
+            </div>
+
+            <div class="divide-y divide-gray-100 max-h-96 overflow-y-auto" id="member-list">
+                {% for member in members %}
+                    <label class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="attendees" value="{{ member.id }}"
+                               class="attendee-checkbox h-6 w-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                               {% if member.id in existing_attendance %}checked{% endif %}
+                               onchange="updateCount()">
+                        <span class="ml-4 flex-1">
+                            <span class="text-lg text-gray-900">{{ member.name }}</span>
+                            {% if member.member_type == 'guest' %}
+                                <span class="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Guest</span>
+                            {% endif %}
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Add Guest -->
+        <div class="bg-gray-50 rounded-lg p-4">
+            <button type="button" onclick="showAddGuest()"
+                    class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                + Add a new guest
+            </button>
+
+            <div id="add-guest-form" class="hidden mt-4 space-y-3">
+                <input type="text" id="guest-name" placeholder="Guest name"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="email" id="guest-email" placeholder="Email (optional)"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="flex gap-2">
+                    <button type="button" onclick="addGuest()"
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        Add Guest
+                    </button>
+                    <button type="button" onclick="hideAddGuest()"
+                            class="text-gray-600 px-4 py-2 hover:text-gray-800">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit"
+                class="w-full bg-green-600 text-white text-xl font-bold py-5 rounded-xl shadow-lg hover:bg-green-700 transition-colors">
+            ✓ Save Attendance
+        </button>
+    </form>
+
+</div>
+
+<script>
+function updateCount() {
+    const checked = document.querySelectorAll('.attendee-checkbox:checked').length;
+    document.getElementById('attendee-count').textContent = checked + ' selected';
+}
+
+function showAddGuest() {
+    document.getElementById('add-guest-form').classList.remove('hidden');
+}
+
+function hideAddGuest() {
+    document.getElementById('add-guest-form').classList.add('hidden');
+    document.getElementById('guest-name').value = '';
+    document.getElementById('guest-email').value = '';
+}
+
+async function addGuest() {
+    const name = document.getElementById('guest-name').value.trim();
+    const email = document.getElementById('guest-email').value.trim();
+
+    if (!name) {
+        alert('Please enter a name');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+
+        const response = await fetch('{{ url_for("secretary.add_guest") }}', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        // Add to member list
+        const memberList = document.getElementById('member-list');
+        const newLabel = document.createElement('label');
+        newLabel.className = 'flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer bg-green-50';
+        newLabel.innerHTML = `
+            <input type="checkbox" name="attendees" value="${data.id}"
+                   class="attendee-checkbox h-6 w-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                   checked onchange="updateCount()">
+            <span class="ml-4 flex-1">
+                <span class="text-lg text-gray-900">${data.name}</span>
+                <span class="ml-2 text-xs bg-green-200 text-green-700 px-2 py-0.5 rounded">Just added!</span>
+            </span>
+        `;
+        memberList.insertBefore(newLabel, memberList.firstChild);
+
+        hideAddGuest();
+        updateCount();
+    } catch (error) {
+        alert('Error adding guest. Please try again.');
+        console.error(error);
+    }
+}
+
+// Initialize count on page load
+updateCount();
+</script>
+{% endblock %}

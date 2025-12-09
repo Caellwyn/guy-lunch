@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(python:*)",
+      "Bash(source venv/Scripts/activate)",
+      "Bash(flask --app run:app db migrate:*)",
+      "Bash(flask --app run:app db upgrade:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

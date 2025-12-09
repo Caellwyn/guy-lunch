@@ -48,9 +48,25 @@ def get_this_tuesday(from_date: date = None) -> date:
 
 
 def get_hosting_queue(limit: int = 5) -> list:
-    """Get members in hosting queue order."""
+    """Get members in hosting queue order.
+
+    Uses queue_position if set (manual secretary override),
+    otherwise falls back to attendance_since_hosting (natural order).
+
+    Sorting:
+    - Members with queue_position set come first, ordered by queue_position ASC
+    - Members without queue_position come after, ordered by attendance_since_hosting DESC
+    """
+    from sqlalchemy import case, nullslast
+
+    # Custom ordering: queue_position first (if set), then attendance_since_hosting
+    # NULLS LAST ensures members without queue_position come after those with it
     return Member.query.filter_by(member_type='regular').order_by(
+        # Primary: queue_position (lower = higher priority), NULLs last
+        nullslast(Member.queue_position.asc()),
+        # Secondary: attendance_since_hosting (higher = higher priority)
         Member.attendance_since_hosting.desc(),
+        # Tertiary: name for consistent ordering
         Member.name
     ).limit(limit).all()
 

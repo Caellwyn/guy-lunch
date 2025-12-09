@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Hosting Order{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Hosting Order</h1>
+            <p class="text-gray-600">Drag to reorder who hosts next</p>
+        </div>
+        <a href="{{ url_for('secretary.dashboard') }}" class="text-blue-600 hover:text-blue-800">
+            ← Back
+        </a>
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p class="text-blue-800 text-sm">
+            <strong>Tip:</strong> Drag members up or down to change who hosts next.
+            The person at the top will host this week, second will host next week, etc.
+        </p>
+    </div>
+
+    <!-- Auto-organize button -->
+    <div class="flex justify-end">
+        <button onclick="autoOrganize()"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            🔄 Auto-Organize (Reset to Default)
+        </button>
+    </div>
+
+    <!-- Sortable List -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <ul id="hosting-list" class="divide-y divide-gray-100">
+            {% for member in members %}
+                <li class="hosting-item flex items-center px-4 py-4 hover:bg-gray-50 cursor-grab active:cursor-grabbing"
+                    data-id="{{ member.id }}">
+
+                    <!-- Drag Handle -->
+                    <div class="flex-shrink-0 mr-4 text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                        </svg>
+                    </div>
+
+                    <!-- Position Number -->
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 font-bold text-lg
+                                {% if loop.index == 1 %}bg-red-500 text-white
+                                {% elif loop.index == 2 %}bg-yellow-400 text-gray-900
+                                {% elif loop.index == 3 %}bg-green-500 text-white
+                                {% else %}bg-gray-200 text-gray-700{% endif %}">
+                        {{ loop.index }}
+                    </div>
+
+                    <!-- Member Info -->
+                    <div class="flex-1 min-w-0">
+                        <p class="text-lg font-medium text-gray-900 truncate">{{ member.name }}</p>
+                        <p class="text-sm text-gray-500">
+                            {{ member.attendance_since_hosting or 0 }} lunches since hosting
+                            {% if member.queue_position %}
+                                <span class="text-blue-600">(manually set)</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Status Badge -->
+                    {% if loop.index <= 3 %}
+                        <div class="flex-shrink-0">
+                            {% if loop.index == 1 %}
+                                <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">AT BAT</span>
+                            {% elif loop.index == 2 %}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">ON DECK</span>
+                            {% elif loop.index == 3 %}
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">IN HOLE</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Save Status -->
+    <div id="save-status" class="text-center text-sm text-gray-500 hidden">
+        Saving...
+    </div>
+
+    <!-- Navigation -->
+    <div class="text-center text-gray-500 text-sm pt-4 border-t">
+        <a href="{{ url_for('secretary.dashboard') }}" class="text-blue-600 hover:text-blue-800">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+</div>
+
+<!-- SortableJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+<script>
+// Initialize drag-and-drop
+const hostingList = document.getElementById('hosting-list');
+const saveStatus = document.getElementById('save-status');
+
+const sortable = Sortable.create(hostingList, {
+    animation: 150,
+    ghostClass: 'bg-blue-100',
+    chosenClass: 'bg-blue-50',
+    dragClass: 'shadow-lg',
+    handle: '.hosting-item',
+    onEnd: function(evt) {
+        saveOrder();
+        updatePositionNumbers();
+    }
+});
+
+function updatePositionNumbers() {
+    const items = hostingList.querySelectorAll('.hosting-item');
+    items.forEach((item, index) => {
+        const positionDiv = item.querySelector('.w-10');
+        const position = index + 1;
+
+        // Update number
+        positionDiv.textContent = position;
+
+        // Update colors
+        positionDiv.classList.remove('bg-red-500', 'bg-yellow-400', 'bg-green-500', 'bg-gray-200',
+                                      'text-white', 'text-gray-900', 'text-gray-700');
+
+        if (position === 1) {
+            positionDiv.classList.add('bg-red-500', 'text-white');
+        } else if (position === 2) {
+            positionDiv.classList.add('bg-yellow-400', 'text-gray-900');
+        } else if (position === 3) {
+            positionDiv.classList.add('bg-green-500', 'text-white');
+        } else {
+            positionDiv.classList.add('bg-gray-200', 'text-gray-700');
+        }
+
+        // Update status text
+        const statusText = item.querySelector('.text-sm.text-gray-500');
+        if (position === 1) {
+            statusText.textContent = 'Hosting this week';
+        } else if (position === 2) {
+            statusText.textContent = 'On deck (next week)';
+        } else if (position === 3) {
+            statusText.textContent = 'In the hole';
+        }
+
+        // Update badge
+        const badgeContainer = item.querySelector('.flex-shrink-0:last-child');
+        if (badgeContainer && badgeContainer !== positionDiv.parentElement) {
+            if (position === 1) {
+                badgeContainer.innerHTML = '<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">AT BAT</span>';
+            } else if (position === 2) {
+                badgeContainer.innerHTML = '<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">ON DECK</span>';
+            } else if (position === 3) {
+                badgeContainer.innerHTML = '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">IN HOLE</span>';
+            } else {
+                badgeContainer.innerHTML = '';
+            }
+        }
+    });
+}
+
+async function saveOrder() {
+    const items = hostingList.querySelectorAll('.hosting-item');
+    const order = Array.from(items).map(item => item.dataset.id);
+
+    saveStatus.classList.remove('hidden');
+    saveStatus.textContent = 'Saving...';
+    saveStatus.classList.remove('text-green-600', 'text-red-600');
+    saveStatus.classList.add('text-gray-500');
+
+    try {
+        const response = await fetch('{{ url_for("secretary.reorder_hosting") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ order: order })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            saveStatus.textContent = '✓ Saved!';
+            saveStatus.classList.remove('text-gray-500');
+            saveStatus.classList.add('text-green-600');
+            setTimeout(() => {
+                saveStatus.classList.add('hidden');
+            }, 2000);
+        } else {
+            throw new Error(data.error || 'Save failed');
+        }
+    } catch (error) {
+        saveStatus.textContent = '✗ Error saving. Please try again.';
+        saveStatus.classList.remove('text-gray-500');
+        saveStatus.classList.add('text-red-600');
+        console.error('Save error:', error);
+    }
+}
+
+async function autoOrganize() {
+    if (!confirm('This will reset the hosting order based on actual attendance counts. Members who have attended the most lunches since hosting will be moved to the top. Continue?')) {
+        return;
+    }
+
+    saveStatus.classList.remove('hidden');
+    saveStatus.textContent = 'Reorganizing...';
+    saveStatus.classList.remove('text-green-600', 'text-red-600');
+    saveStatus.classList.add('text-gray-500');
+
+    try {
+        const response = await fetch('{{ url_for("secretary.auto_organize_hosting") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            saveStatus.textContent = '✓ Reorganized! Reloading...';
+            saveStatus.classList.remove('text-gray-500');
+            saveStatus.classList.add('text-green-600');
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            throw new Error(data.error || 'Auto-organize failed');
+        }
+    } catch (error) {
+        saveStatus.textContent = '✗ Error. Please try again.';
+        saveStatus.classList.remove('text-gray-500');
+        saveStatus.classList.add('text-red-600');
+        console.error('Auto-organize error:', error);
+    }
+}
+</script>
+{% endblock %}

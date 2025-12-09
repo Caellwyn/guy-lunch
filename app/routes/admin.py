@@ -9,6 +9,7 @@ import os
 from app import db
 from app.models import Member, Location, Lunch, Attendance, Setting, Photo
 from app.services.storage_service import storage_service
+from app.services.email_jobs import get_hosting_queue
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -58,12 +59,9 @@ def dashboard():
         next_tuesday = today + timedelta(days=days_until_tuesday)
     
     current_lunch = Lunch.query.filter_by(date=next_tuesday).first()
-    
-    # Get hosting queue (top 5)
-    hosting_queue = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).limit(5).all()
+
+    # Get hosting queue (top 5) - uses queue_position override if set
+    hosting_queue = get_hosting_queue(limit=5)
     
     # Get recent lunches
     recent_lunches = Lunch.query.order_by(Lunch.date.desc()).limit(5).all()
@@ -149,11 +147,9 @@ def attendance():
     # Get already recorded attendance
     existing_attendance = {a.member_id: a for a in lunch.attendances.all()}
     
-    # Get next host suggestion
-    next_host = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).first()
+    # Get next host suggestion (uses queue_position override if set)
+    queue = get_hosting_queue(limit=1)
+    next_host = queue[0] if queue else None
     
     return render_template('admin/attendance.html',
                            lunch=lunch,
@@ -167,7 +163,39 @@ def attendance():
 def members():
     """Member management page."""
     members = Member.query.order_by(Member.member_type, Member.name).all()
-    return render_template('admin/members.html', members=members)
+
+    # Get current secretary
+    secretary_id = Setting.get('secretary_member_id')
+    current_secretary = Member.query.get(int(secretary_id)) if secretary_id else None
+
+    # Get regular members for secretary dropdown
+    regular_members = Member.query.filter_by(member_type='regular').order_by(Member.name).all()
+
+    return render_template('admin/members.html',
+                           members=members,
+                           current_secretary=current_secretary,
+                           regular_members=regular_members)
+
+
+@admin_bp.route('/members/set-secretary', methods=['POST'])
+@admin_required
+def set_secretary():
+    """Set the group secretary."""
+    member_id = request.form.get('secretary_id')
+
+    if member_id:
+        member = Member.query.get(int(member_id))
+        if member and member.member_type == 'regular':
+            Setting.set('secretary_member_id', str(member.id))
+            flash(f'{member.name} is now the group secretary.', 'success')
+        else:
+            flash('Invalid member selected.', 'error')
+    else:
+        # Clear secretary
+        Setting.set('secretary_member_id', '')
+        flash('Secretary role has been cleared.', 'success')
+
+    return redirect(url_for('admin.members'))
 
 
 @admin_bp.route('/members/add', methods=['GET', 'POST'])
@@ -242,10 +270,7 @@ def edit_member(member_id):
 @admin_required
 def hosting_queue():
     """View the full hosting queue."""
-    members = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).all()
+    members = get_hosting_queue(limit=100)  # Get all members in queue order
     return render_template('admin/hosting_queue.html', members=members)
 
 
@@ -253,10 +278,7 @@ def hosting_queue():
 @admin_required
 def swap_hosts():
     """Swap two members' positions in the hosting queue."""
-    members = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).all()
+    members = get_hosting_queue(limit=100)  # Get all members in queue order
 
     if request.method == 'POST':
         member1_id = request.form.get('member1_id', type=int)
@@ -545,16 +567,10 @@ def preview_email(email_type):
     next_tuesday = get_next_tuesday()
     app_url = current_app.config.get('APP_URL', 'http://localhost:5000')
 
-    # Get sample data from database
-    next_host = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).first()
-
-    backup_host = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).offset(1).first()
+    # Get sample data from database (uses queue_position override if set)
+    queue = get_hosting_queue(limit=2)
+    next_host = queue[0] if len(queue) > 0 else None
+    backup_host = queue[1] if len(queue) > 1 else None
 
     recent_locations = Location.query.order_by(Location.last_visited.desc()).limit(5).all()
     sample_location = recent_locations[0] if recent_locations else None
@@ -709,16 +725,10 @@ def live_preview_email(email_type):
     next_tuesday = get_next_tuesday()
     app_url = current_app.config.get('APP_URL', request.url_root.rstrip('/'))
 
-    # Get the next host
-    next_host = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).first()
-
-    backup_host = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).offset(1).first()
+    # Get the next host (uses queue_position override if set)
+    queue = get_hosting_queue(limit=2)
+    next_host = queue[0] if len(queue) > 0 else None
+    backup_host = queue[1] if len(queue) > 1 else None
 
     # Get or create a test lunch for next Tuesday
     test_lunch = Lunch.query.filter_by(date=next_tuesday).first()
@@ -997,11 +1007,8 @@ def email_jobs():
     # Get recent email logs
     recent_emails = EmailLog.query.order_by(EmailLog.sent_at.desc()).limit(20).all()
 
-    # Get hosting queue
-    hosting_queue = Member.query.filter_by(member_type='regular').order_by(
-        Member.attendance_since_hosting.desc(),
-        Member.name
-    ).limit(3).all()
+    # Get hosting queue (uses queue_position override if set)
+    hosting_queue = get_hosting_queue(limit=3)
 
     return render_template('admin/email_jobs.html',
                            next_tuesday=next_tuesday,
@@ -1064,25 +1071,7 @@ def settings():
                            secretary=secretary)
 
 
-@admin_bp.route('/settings/secretary', methods=['POST'])
-@admin_required
-def set_secretary():
-    """Set the secretary member."""
-    member_id = request.form.get('secretary_id')
-
-    if member_id:
-        member = Member.query.get(int(member_id))
-        if member:
-            Setting.set('secretary_member_id', str(member.id))
-            flash(f'{member.name} is now set as the secretary.', 'success')
-        else:
-            flash('Invalid member selected.', 'error')
-    else:
-        # Clear secretary
-        Setting.set('secretary_member_id', '')
-        flash('Secretary has been cleared.', 'success')
-
-    return redirect(url_for('admin.settings'))
+# Secretary assignment moved to /admin/members/set-secretary
 
 
 # ============== LOCATIONS MANAGEMENT ==============

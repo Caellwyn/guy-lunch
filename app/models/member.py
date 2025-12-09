@@ -17,6 +17,11 @@ class Member(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Manual hosting queue position override (set by secretary)
+    # NULL = use natural order (attendance_since_hosting desc)
+    # Lower number = higher priority (1 = hosts next)
+    queue_position = db.Column(db.Integer, nullable=True)
+
     # Magic link authentication fields
     magic_link_token = db.Column(db.String(64), unique=True, nullable=True)
     magic_link_expires = db.Column(db.DateTime, nullable=True)

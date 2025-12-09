@@ -39,13 +39,13 @@
                 <h2 class="font-semibold text-gray-900 mb-4">Previous Locations</h2>
                 <div class="space-y-3">
                     {% for location in recent_locations %}
-                        <label class="block p-4 border-2 rounded-lg cursor-pointer hover:border-blue-500 transition-colors
+                        <label class="location-option block p-4 border-2 rounded-lg cursor-pointer hover:border-blue-500 transition-colors
                                       {% if loop.first %}border-blue-500 bg-blue-50{% else %}border-gray-200{% endif %}">
                             <div class="flex items-start">
                                 <input type="radio" name="location_id" value="{{ location.id }}"
                                        class="mt-1 h-5 w-5 text-blue-600"
                                        {% if loop.first %}checked{% endif %}
-                                       onchange="selectExisting()">
+                                       onchange="selectExistingLocation(this)">
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center gap-2">
                                         <span class="font-medium text-gray-900">{{ location.name }}</span>
@@ -426,14 +426,48 @@ function syncManualPhone() {
 }
 
 // Selection type helpers
+function selectExistingLocation(radio) {
+    document.getElementById('selection_type').value = 'existing';
+
+    // Update visual styling for all location options
+    document.querySelectorAll('.location-option').forEach(label => {
+        label.classList.remove('border-blue-500', 'bg-blue-50');
+        label.classList.add('border-gray-200');
+    });
+
+    // Highlight the selected one
+    const selectedLabel = radio.closest('.location-option');
+    if (selectedLabel) {
+        selectedLabel.classList.remove('border-gray-200');
+        selectedLabel.classList.add('border-blue-500', 'bg-blue-50');
+    }
+
+    // Clear any new location selection
+    document.getElementById('selected_place').classList.add('hidden');
+    document.getElementById('place_search').value = '';
+    document.getElementById('new_location_name').value = '';
+    document.getElementById('new_location_address').value = '';
+    document.getElementById('new_location_phone').value = '';
+    document.getElementById('google_place_id').value = '';
+    document.getElementById('google_rating').value = '';
+    document.getElementById('price_level').value = '';
+    document.getElementById('cuisine_type').value = '';
+}
+
+// Legacy function for backwards compatibility
 function selectExisting() {
     document.getElementById('selection_type').value = 'existing';
-    clearSelection();
 }
 
 function selectNew() {
     document.getElementById('selection_type').value = 'new';
     document.querySelectorAll('input[name=location_id]').forEach(r => r.checked = false);
+
+    // Clear visual styling from all existing location options
+    document.querySelectorAll('.location-option').forEach(label => {
+        label.classList.remove('border-blue-500', 'bg-blue-50');
+        label.classList.add('border-gray-200');
+    });
 }
 
 // Location details modal
