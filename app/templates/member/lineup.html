@@ -63,9 +63,10 @@
                 <!-- Member Info -->
                 <div class="flex-1">
                     <div class="flex items-baseline gap-2">
-                        <h3 class="font-condensed font-bold text-xl text-gray-800 uppercase tracking-tight {% if item.member.id == member.id %}text-blue-700{% endif %}">
+                        <a href="{{ url_for('member.view_profile', member_id=item.member.id) }}"
+                           class="font-condensed font-bold text-xl text-gray-800 uppercase tracking-tight hover:text-blue-600 transition-colors {% if item.member.id == member.id %}text-blue-700{% endif %}">
                             {{ item.member.name }}
-                        </h3>
+                        </a>
                         {% if item.member.id == member.id %}
                             <span class="font-handwriting text-sm text-blue-600 transform -rotate-3">(You)</span>
                         {% endif %}

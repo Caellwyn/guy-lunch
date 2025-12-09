@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Swap Hosts - Tuesday Lunch Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <a href="{{ url_for('admin.hosting_queue') }}" class="text-blue-600 hover:underline text-sm">← Hosting Queue</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-1">🔄 Swap Host Positions</h1>
+        <p class="text-gray-600">Select two members to swap their positions in the hosting queue</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-lg {% if category == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-green-50 text-green-800 border border-green-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Swap Form -->
+    <form method="POST" class="bg-white rounded-lg shadow p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- First Member Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">First Member</label>
+                <select name="member1_id" id="member1_id" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+                    <option value="">Select member...</option>
+                    {% for member in members %}
+                        <option value="{{ member.id }}" data-position="{{ loop.index }}" data-count="{{ member.attendance_since_hosting }}">
+                            #{{ loop.index }} - {{ member.name }} ({{ member.attendance_since_hosting }} lunches)
+                        </option>
+                    {% endfor %}
+                </select>
+                <div id="member1_info" class="mt-2 text-sm text-gray-500 hidden">
+                    <span class="font-medium">Current position:</span> <span id="member1_position"></span>
+                </div>
+            </div>
+
+            <!-- Swap Icon -->
+            <div class="hidden md:flex items-center justify-center">
+                <div class="text-4xl text-gray-300">⇄</div>
+            </div>
+
+            <!-- Second Member Selection -->
+            <div class="md:col-start-2 md:row-start-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Second Member</label>
+                <select name="member2_id" id="member2_id" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg">
+                    <option value="">Select member...</option>
+                    {% for member in members %}
+                        <option value="{{ member.id }}" data-position="{{ loop.index }}" data-count="{{ member.attendance_since_hosting }}">
+                            #{{ loop.index }} - {{ member.name }} ({{ member.attendance_since_hosting }} lunches)
+                        </option>
+                    {% endfor %}
+                </select>
+                <div id="member2_info" class="mt-2 text-sm text-gray-500 hidden">
+                    <span class="font-medium">Current position:</span> <span id="member2_position"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div id="swap_preview" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-blue-800 font-medium">Preview:</p>
+            <p class="text-blue-700 mt-1" id="preview_text"></p>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex gap-4">
+            <button type="submit"
+                class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                Swap Positions
+            </button>
+            <a href="{{ url_for('admin.hosting_queue') }}"
+                class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                Cancel
+            </a>
+        </div>
+    </form>
+
+    <!-- Help Text -->
+    <div class="text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
+        <p><strong>How swapping works:</strong></p>
+        <ul class="list-disc list-inside mt-2 space-y-1">
+            <li>This exchanges the "lunches attended since hosting" count between two members</li>
+            <li>Use this when a member can't host and needs to trade with someone else</li>
+            <li>The swap takes effect immediately</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    const member1Select = document.getElementById('member1_id');
+    const member2Select = document.getElementById('member2_id');
+    const preview = document.getElementById('swap_preview');
+    const previewText = document.getElementById('preview_text');
+
+    function updatePreview() {
+        const m1 = member1Select.selectedOptions[0];
+        const m2 = member2Select.selectedOptions[0];
+
+        if (m1.value && m2.value && m1.value !== m2.value) {
+            const m1Name = m1.text.split(' - ')[1].split(' (')[0];
+            const m2Name = m2.text.split(' - ')[1].split(' (')[0];
+            const m1Pos = m1.dataset.position;
+            const m2Pos = m2.dataset.position;
+
+            previewText.textContent = `${m1Name} will move from #${m1Pos} to #${m2Pos}, and ${m2Name} will move from #${m2Pos} to #${m1Pos}`;
+            preview.classList.remove('hidden');
+        } else {
+            preview.classList.add('hidden');
+        }
+    }
+
+    member1Select.addEventListener('change', updatePreview);
+    member2Select.addEventListener('change', updatePreview);
+</script>
+{% endblock %}

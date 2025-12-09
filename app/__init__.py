@@ -1,11 +1,12 @@
 import os
+from datetime import timedelta
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, upgrade
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (override=True ensures .env values take precedence)
+load_dotenv(override=True)
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -15,15 +16,21 @@ migrate = Migrate()
 def create_app(config_name=None):
     """Application factory pattern."""
     app = Flask(__name__)
-    
+
     # Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///dev.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
+
+    # Session configuration - 30 day persistent sessions
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+    app.config['SESSION_COOKIE_SECURE'] = os.environ.get('RAILWAY_ENVIRONMENT') is not None  # HTTPS only in production
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
     # Admin password for simple auth (MVP)
     app.config['ADMIN_PASSWORD'] = os.environ.get('ADMIN_PASSWORD', 'lunch-admin-2024')
-    
+
     # App URL for magic links (defaults to localhost for dev, must be set in production)
     app.config['APP_URL'] = os.environ.get('APP_URL', 'http://localhost:5000')
     

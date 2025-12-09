@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import db
 from app.models import Lunch, Location, Member, Rating
 
@@ -7,7 +7,10 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """Home page - simple landing for now."""
+    """Home page - landing with member login."""
+    # If member is already logged in, redirect to their dashboard
+    if session.get('member_id'):
+        return redirect(url_for('member.dashboard'))
     return render_template('index.html')
 
 

@@ -209,21 +209,32 @@ def add_member():
 def edit_member(member_id):
     """Edit a member."""
     member = Member.query.get_or_404(member_id)
-    
+
     if request.method == 'POST':
         member.name = request.form.get('name', member.name).strip()
         member.email = request.form.get('email', '').strip() or None
         member.member_type = request.form.get('member_type', member.member_type)
-        
+
         # Allow manual adjustment of attendance counter
         new_count = request.form.get('attendance_since_hosting')
         if new_count is not None and new_count.isdigit():
             member.attendance_since_hosting = int(new_count)
-        
+
+        # Profile fields
+        member.phone = request.form.get('phone', '').strip() or None
+        member.business = request.form.get('business', '').strip() or None
+        website = request.form.get('website', '').strip() or None
+        if website and not (website.startswith('http://') or website.startswith('https://')):
+            website = 'https://' + website
+        member.website = website
+        bio = request.form.get('bio', '').strip() or None
+        member.bio = bio[:500] if bio else None
+        member.profile_public = request.form.get('profile_public') == 'on'
+
         db.session.commit()
         flash(f'Updated {member.name}', 'success')
         return redirect(url_for('admin.members'))
-    
+
     return render_template('admin/edit_member.html', member=member)
 
 
@@ -236,6 +247,50 @@ def hosting_queue():
         Member.name
     ).all()
     return render_template('admin/hosting_queue.html', members=members)
+
+
+@admin_bp.route('/hosting-queue/swap', methods=['GET', 'POST'])
+@admin_required
+def swap_hosts():
+    """Swap two members' positions in the hosting queue."""
+    members = Member.query.filter_by(member_type='regular').order_by(
+        Member.attendance_since_hosting.desc(),
+        Member.name
+    ).all()
+
+    if request.method == 'POST':
+        member1_id = request.form.get('member1_id', type=int)
+        member2_id = request.form.get('member2_id', type=int)
+
+        if not member1_id or not member2_id:
+            flash('Please select two members to swap.', 'error')
+            return render_template('admin/swap_hosts.html', members=members)
+
+        if member1_id == member2_id:
+            flash('Cannot swap a member with themselves.', 'error')
+            return render_template('admin/swap_hosts.html', members=members)
+
+        member1 = Member.query.get(member1_id)
+        member2 = Member.query.get(member2_id)
+
+        if not member1 or not member2:
+            flash('One or both members not found.', 'error')
+            return render_template('admin/swap_hosts.html', members=members)
+
+        if member1.member_type != 'regular' or member2.member_type != 'regular':
+            flash('Both members must be active regular members.', 'error')
+            return render_template('admin/swap_hosts.html', members=members)
+
+        # Swap their attendance_since_hosting values
+        member1.attendance_since_hosting, member2.attendance_since_hosting = \
+            member2.attendance_since_hosting, member1.attendance_since_hosting
+
+        db.session.commit()
+
+        flash(f'Swapped positions: {member1.name} ↔ {member2.name}', 'success')
+        return redirect(url_for('admin.hosting_queue'))
+
+    return render_template('admin/swap_hosts.html', members=members)
 
 
 @admin_bp.route('/add-guest', methods=['POST'])
@@ -637,6 +692,287 @@ def preview_email(email_type):
                            subject=subject,
                            recipient=recipient,
                            brevo_params=params)
+
+
+@admin_bp.route('/emails/live-preview/<email_type>')
+@admin_required
+def live_preview_email(email_type):
+    """
+    Preview an email with LIVE working links.
+
+    Creates real database records (lunch, tokens) so all links work.
+    No email is sent - just renders in browser for testing.
+    """
+    from app.models import Lunch, Rating
+    import os
+
+    next_tuesday = get_next_tuesday()
+    app_url = current_app.config.get('APP_URL', request.url_root.rstrip('/'))
+
+    # Get the next host
+    next_host = Member.query.filter_by(member_type='regular').order_by(
+        Member.attendance_since_hosting.desc(),
+        Member.name
+    ).first()
+
+    backup_host = Member.query.filter_by(member_type='regular').order_by(
+        Member.attendance_since_hosting.desc(),
+        Member.name
+    ).offset(1).first()
+
+    # Get or create a test lunch for next Tuesday
+    test_lunch = Lunch.query.filter_by(date=next_tuesday).first()
+    if not test_lunch:
+        test_lunch = Lunch(
+            date=next_tuesday,
+            host_id=next_host.id if next_host else None,
+            status='planned'
+        )
+        db.session.add(test_lunch)
+        db.session.flush()
+
+    # Image URLs
+    ai_guy_logo = url_for('static', filename='emails/Ai_guy_transparent.png', _external=True)
+    header_img = url_for('static', filename='emails/announcment_header.jpg', _external=True)
+    location_bg = url_for('static', filename='emails/announcment_Location_backgound.jpg', _external=True)
+    intel_bg = url_for('static', filename='emails/announcement_intel_report_background.jpg', _external=True)
+
+    # Build params based on email type with REAL tokens
+    if email_type == 'host_confirmation':
+        # Generate a real confirmation token
+        token = secrets.token_urlsafe(32)
+        test_lunch.confirmation_token = token
+        test_lunch.reservation_confirmed = False
+        test_lunch.location_id = None
+        db.session.commit()
+
+        template_file = 'emails/host_confirmation.html'
+        params = {
+            'HOST_NAME': next_host.name if next_host else 'Test Host',
+            'LUNCH_DATE': next_tuesday.strftime('%B %d, %Y'),
+            'CONFIRM_URL': f"{app_url}/confirm/{token}",
+            'AI_GUY_LOGO_URL': ai_guy_logo,
+        }
+        subject = f"You're Hosting Tuesday Lunch - {next_tuesday.strftime('%B %d')}"
+        recipient = next_host.name if next_host else 'Test Host'
+        recipient_email = next_host.email if next_host else 'test@example.com'
+
+    elif email_type == 'secretary_reminder':
+        # Check if lunch has a location confirmed
+        if test_lunch.location_id and test_lunch.reservation_confirmed:
+            location = Location.query.get(test_lunch.location_id)
+            template_file = 'emails/secretary_reminder.html'
+            params = {
+                'EMAIL_TITLE': f"Make Reservation - {location.name}",
+                'EMAIL_HEADING': "Time to Make the Reservation!",
+                'INTRO_TEXT': f"{next_host.name if next_host else 'The host'} has selected a location for this week's lunch. Please call to make a reservation.",
+                'BOX_BG_COLOR': '#f0fdf4',
+                'BOX_BORDER_COLOR': '#22c55e',
+                'BOX_LABEL_COLOR': '#166534',
+                'BOX_TITLE_COLOR': '#14532d',
+                'BOX_TEXT_COLOR': '#166534',
+                'BOX_LABEL': "This Week's Location",
+                'BOX_TITLE': location.name,
+                'BOX_CONTENT': f"Address: {location.address or 'N/A'}<br>Phone: {location.phone or 'N/A'}",
+                'LUNCH_DATE': next_tuesday.strftime('%A, %B %d, %Y'),
+                'EXPECTED_ATTENDANCE': '18',
+                'HOST_NAME': next_host.name if next_host else 'Host',
+                'AI_GUY_LOGO_URL': ai_guy_logo,
+            }
+            subject = f"Make Reservation - {location.name}"
+        else:
+            # Not confirmed - show alert version
+            template_file = 'emails/secretary_reminder.html'
+            params = {
+                'EMAIL_TITLE': "ALERT: Host Has Not Confirmed Location",
+                'EMAIL_HEADING': "Host Has Not Responded",
+                'INTRO_TEXT': f"{next_host.name if next_host else 'The host'} has not yet selected a restaurant for this week's lunch.",
+                'BOX_BG_COLOR': '#fef2f2',
+                'BOX_BORDER_COLOR': '#dc2626',
+                'BOX_LABEL_COLOR': '#991b1b',
+                'BOX_TITLE_COLOR': '#7f1d1d',
+                'BOX_TEXT_COLOR': '#991b1b',
+                'BOX_LABEL': "Action Required",
+                'BOX_TITLE': "Please Contact Host",
+                'BOX_CONTENT': f"Primary: {next_host.name if next_host else 'N/A'} ({next_host.email if next_host else 'N/A'})<br>Backup: {backup_host.name if backup_host else 'N/A'} ({backup_host.email if backup_host else 'N/A'})",
+                'LUNCH_DATE': next_tuesday.strftime('%A, %B %d, %Y'),
+                'EXPECTED_ATTENDANCE': '18',
+                'HOST_NAME': next_host.name if next_host else 'Host',
+                'AI_GUY_LOGO_URL': ai_guy_logo,
+            }
+            subject = "ALERT: Host Has Not Confirmed Location"
+        recipient = 'Secretary'
+        recipient_email = 'secretary@example.com'
+
+    elif email_type == 'announcement':
+        # Need a location for announcement
+        if not test_lunch.location_id:
+            # Use most recent location for testing
+            sample_location = Location.query.order_by(Location.last_visited.desc()).first()
+            if sample_location:
+                test_lunch.location_id = sample_location.id
+                test_lunch.reservation_confirmed = True
+                db.session.commit()
+
+        location = Location.query.get(test_lunch.location_id) if test_lunch.location_id else None
+        if not location:
+            flash('No location available for announcement preview. Please add a location first.', 'error')
+            return redirect(url_for('admin.email_jobs'))
+
+        template_file = 'emails/announcement_V2.html'
+        params = {
+            'LUNCH_DATE': next_tuesday.strftime('%B %d, %Y'),
+            'LOCATION_NAME': location.name,
+            'LOCATION_ADDRESS': location.address or 'Address TBD',
+            'GOOGLE_MAPS_URL': f"https://www.google.com/maps/search/?api=1&query={(location.address or location.name).replace(' ', '+')}",
+            'START_TIME': '12 hundred hours (12:00 PM)',
+            'HOST_NAME': next_host.name if next_host else 'Host',
+            'LOCATION_CUISINE': location.cuisine_type or 'Great Food',
+            'LOCATION_RATING': f"{location.avg_group_rating:.1f}" if location.avg_group_rating else "New!",
+            'LOCATION_PRICE': ('$' * location.price_level if location.price_level else '$$') + " (Mid-Range)",
+            'LAST_VISITED': location.last_visited.strftime('%B %d, %Y') if location.last_visited else "First Engagement!",
+            'HEADER_IMAGE_URL': header_img,
+            'LOCATION_BG_IMAGE_URL': location_bg,
+            'INTEL_BG_IMAGE_URL': intel_bg,
+            'AI_GUY_LOGO_URL': ai_guy_logo,
+        }
+        subject = f"Guy Lunch Briefing - {next_tuesday.strftime('%B %d')} at {location.name}"
+        recipient = 'All Members'
+        recipient_email = 'all@example.com'
+
+    elif email_type == 'rating_request':
+        # Need a location and a member for rating
+        sample_member = Member.query.filter_by(member_type='regular').first()
+        location = Location.query.get(test_lunch.location_id) if test_lunch.location_id else None
+
+        if not location:
+            sample_location = Location.query.order_by(Location.last_visited.desc()).first()
+            if sample_location:
+                test_lunch.location_id = sample_location.id
+                db.session.commit()
+                location = sample_location
+
+        if not location:
+            flash('No location available for rating preview. Please add a location first.', 'error')
+            return redirect(url_for('admin.email_jobs'))
+
+        # Create or get a rating record with a real token
+        rating_token = secrets.token_urlsafe(32)
+        test_rating = Rating.query.filter_by(
+            lunch_id=test_lunch.id,
+            member_id=sample_member.id if sample_member else None
+        ).first()
+
+        if not test_rating and sample_member:
+            test_rating = Rating(
+                lunch_id=test_lunch.id,
+                member_id=sample_member.id,
+                rating_token=rating_token
+            )
+            db.session.add(test_rating)
+        elif test_rating:
+            test_rating.rating_token = rating_token
+            test_rating.rating = None  # Reset so we can test
+        db.session.commit()
+
+        template_file = 'emails/rating_request.html'
+        params = {
+            'MEMBER_NAME': sample_member.name if sample_member else 'Test Member',
+            'LOCATION_NAME': location.name,
+            'LUNCH_DATE': next_tuesday.strftime('%B %d, %Y'),
+            'HOST_NAME': next_host.name if next_host else 'Host',
+            'RATING_URL': f"{app_url}/rate/{rating_token}",
+            'ATTENDANCE_COUNT': '18',
+            'VISIT_TEXT': f"Visit #{location.visit_count + 1}" if location.visit_count else "First visit!",
+            'AI_GUY_LOGO_URL': ai_guy_logo,
+        }
+        subject = f"Rate Today's Lunch at {location.name}"
+        recipient = sample_member.name if sample_member else 'Test Member'
+        recipient_email = sample_member.email if sample_member else 'test@example.com'
+
+    else:
+        flash(f'Unknown email type: {email_type}', 'error')
+        return redirect(url_for('admin.email_jobs'))
+
+    # Read and render the template
+    template_path = os.path.join(current_app.root_path, 'templates', template_file)
+    with open(template_path, 'r', encoding='utf-8') as f:
+        raw_html = f.read()
+
+    email_html = substitute_brevo_params(raw_html, params)
+
+    # Wrap in a preview container with banner
+    preview_html = f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Live Preview: {email_type}</title>
+        <style>
+            .preview-banner {{
+                background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+                color: white;
+                padding: 16px 24px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }}
+            .preview-banner h2 {{
+                margin: 0 0 8px 0;
+                font-size: 18px;
+            }}
+            .preview-banner p {{
+                margin: 4px 0;
+                font-size: 14px;
+                opacity: 0.9;
+            }}
+            .preview-banner .meta {{
+                display: flex;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid rgba(255,255,255,0.2);
+            }}
+            .preview-banner .meta span {{
+                font-size: 13px;
+            }}
+            .preview-banner .meta strong {{
+                color: #fbbf24;
+            }}
+            .preview-banner a {{
+                color: #fbbf24;
+                text-decoration: none;
+            }}
+            .preview-banner a:hover {{
+                text-decoration: underline;
+            }}
+            .email-container {{
+                max-width: 100%;
+                margin: 0;
+            }}
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0;">
+        <div class="preview-banner">
+            <h2>LIVE PREVIEW MODE - All Links Work!</h2>
+            <p>This is how the email will look. Click any links to test the full flow. No email was sent.</p>
+            <div class="meta">
+                <span><strong>Type:</strong> {email_type.replace('_', ' ').title()}</span>
+                <span><strong>To:</strong> {recipient} ({recipient_email})</span>
+                <span><strong>Subject:</strong> {subject}</span>
+                <span><a href="{url_for('admin.email_jobs')}">&larr; Back to Email Jobs</a></span>
+            </div>
+        </div>
+        <div class="email-container">
+            {email_html}
+        </div>
+    </body>
+    </html>
+    '''
+
+    return preview_html
 
 
 # ============== EMAIL JOB TRIGGERS ==============

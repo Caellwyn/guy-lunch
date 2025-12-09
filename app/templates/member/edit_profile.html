@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - {{ member.name }}{% endblock %}
+
+{% block body_class %}bg-stadium-grass{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+
+    <!-- Back Link -->
+    <div class="mb-4">
+        <a href="{{ url_for('member.view_profile', member_id=member.id) }}" class="text-white hover:text-yellow-300 text-sm font-condensed uppercase tracking-wider">
+            ← Back to Profile
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+        <h1 class="font-jersey text-4xl text-white drop-shadow-lg tracking-wider">EDIT PROFILE</h1>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-800 border border-red-300{% else %}bg-green-100 text-green-800 border border-green-300{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Edit Form -->
+    <div class="texture-metal p-1 relative">
+        <!-- Screws -->
+        <div class="absolute top-2 left-2 screw-head"></div>
+        <div class="absolute top-2 right-2 screw-head"></div>
+        <div class="absolute bottom-2 left-2 screw-head"></div>
+        <div class="absolute bottom-2 right-2 screw-head"></div>
+
+        <div class="border-2 border-gray-400 rounded-lg p-6 bg-white bg-opacity-90">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+
+                <!-- Profile Picture -->
+                <div class="text-center">
+                    <div class="mb-4 relative inline-block">
+                        {% if member.profile_picture_url %}
+                            <img id="profile-preview"
+                                 src="{{ member.profile_picture_url }}"
+                                 alt="{{ member.name }}"
+                                 class="w-24 h-24 rounded-full object-cover border-4 border-gray-400 shadow-lg mx-auto">
+                        {% else %}
+                            <img id="profile-preview"
+                                 src=""
+                                 alt="{{ member.name }}"
+                                 class="w-24 h-24 rounded-full object-cover border-4 border-gray-400 shadow-lg mx-auto hidden">
+                            <div id="profile-placeholder" class="w-24 h-24 rounded-full bg-gray-600 border-4 border-gray-400 shadow-lg flex items-center justify-center mx-auto">
+                                <span class="text-3xl text-gray-400">{{ member.name[0].upper() }}</span>
+                            </div>
+                        {% endif %}
+                        <!-- Loading overlay -->
+                        <div id="upload-loading" class="hidden absolute inset-0 flex items-center justify-center">
+                            <div class="w-24 h-24 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
+                                <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label id="upload-button" class="cursor-pointer inline-block bg-gray-200 text-gray-700 px-4 py-2 rounded font-condensed uppercase text-sm hover:bg-gray-300 transition-colors">
+                            <span id="file-label">Change Photo</span>
+                            <input type="file" id="profile-file-input" accept="image/*" class="hidden">
+                        </label>
+                        <!-- Status message -->
+                        <div id="upload-status" class="text-sm font-condensed hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Name (Required) -->
+                <div>
+                    <label for="name" class="block font-condensed text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Name <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" required
+                           value="{{ member.name }}"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-condensed text-lg">
+                    <p class="text-xs text-gray-500 mt-1">This is how your name appears throughout the app</p>
+                </div>
+
+                <!-- Email (Required) -->
+                <div>
+                    <label for="email" class="block font-condensed text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Email <span class="text-red-600">*</span>
+                    </label>
+                    <input type="email" id="email" name="email" required
+                           value="{{ member.email }}"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-condensed">
+                    <p class="text-xs text-gray-500 mt-1">Used for login and notifications</p>
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label for="phone" class="block font-condensed text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Phone
+                    </label>
+                    <input type="tel" id="phone" name="phone"
+                           value="{{ member.phone or '' }}"
+                           placeholder="(555) 123-4567"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-condensed">
+                </div>
+
+                <!-- Business -->
+                <div>
+                    <label for="business" class="block font-condensed text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Business / Company
+                    </label>
+                    <input type="text" id="business" name="business"
+                           value="{{ member.business or '' }}"
+                           placeholder="Your company name"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-condensed">
+                </div>
+
+                <!-- Website -->
+                <div>
+                    <label for="website" class="block font-condensed text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Website
+                    </label>
+                    <input type="url" id="website" name="website"
+                           value="{{ member.website or '' }}"
+                           placeholder="https://yourwebsite.com"
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-condensed">
+                </div>
+
+                <!-- Bio -->
+                <div>
+                    <label for="bio" class="block font-condensed text-sm font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Bio
+                    </label>
+                    <textarea id="bio" name="bio" rows="4" maxlength="500"
+                              placeholder="Tell us a bit about yourself..."
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-condensed resize-none">{{ member.bio or '' }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">Max 500 characters</p>
+                </div>
+
+                <!-- Profile Public Toggle -->
+                <div class="bg-gray-100 rounded-lg p-4">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="profile_public"
+                               {% if member.profile_public %}checked{% endif %}
+                               class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <span class="font-condensed font-bold text-gray-800">Make profile public</span>
+                            <p class="text-xs text-gray-500">When enabled, other members can see your phone, email, website, and bio</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-condensed font-bold uppercase tracking-wider hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        Save Changes
+                    </button>
+                    <a href="{{ url_for('member.view_profile', member_id=member.id) }}"
+                       class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-condensed uppercase hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Upload profile picture to R2 and show preview from actual uploaded URL
+    document.getElementById('profile-file-input').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const preview = document.getElementById('profile-preview');
+        const placeholder = document.getElementById('profile-placeholder');
+        const loading = document.getElementById('upload-loading');
+        const label = document.getElementById('file-label');
+        const status = document.getElementById('upload-status');
+        const button = document.getElementById('upload-button');
+
+        // Show loading state
+        loading.classList.remove('hidden');
+        button.classList.add('opacity-50', 'pointer-events-none');
+        label.textContent = 'Uploading...';
+        status.classList.add('hidden');
+
+        try {
+            // Create form data for upload
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Upload to R2 via API
+            const response = await fetch('/api/profile-picture/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success && result.url) {
+                // Show the actual R2 URL in preview (confirms upload worked)
+                preview.src = result.url;
+                preview.classList.remove('hidden');
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+
+                // Show success message
+                status.textContent = 'Photo uploaded!';
+                status.classList.remove('hidden', 'text-red-600');
+                status.classList.add('text-green-600');
+                label.textContent = 'Change Photo';
+
+                // Hide success message after 3 seconds
+                setTimeout(() => {
+                    status.classList.add('hidden');
+                }, 3000);
+            } else {
+                // Show error
+                status.textContent = result.error || 'Upload failed. Please try again.';
+                status.classList.remove('hidden', 'text-green-600');
+                status.classList.add('text-red-600');
+                label.textContent = 'Change Photo';
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            status.textContent = 'Upload failed. Please try again.';
+            status.classList.remove('hidden', 'text-green-600');
+            status.classList.add('text-red-600');
+            label.textContent = 'Change Photo';
+        } finally {
+            // Hide loading state
+            loading.classList.add('hidden');
+            button.classList.remove('opacity-50', 'pointer-events-none');
+            // Clear the file input so the same file can be re-selected if needed
+            e.target.value = '';
+        }
+    });
+</script>
+{% endblock %}

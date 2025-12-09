@@ -37,8 +37,11 @@ def index():
     # We want lunches that have at least one photo, ordered by date
     lunches_with_photos = Lunch.query.join(Photo).distinct().order_by(Lunch.date.desc()).all()
     
-    # Get recent lunches for the upload dropdown (all recent lunches, not just ones with photos)
-    recent_lunches = Lunch.query.order_by(Lunch.date.desc()).limit(10).all()
+    # Get lunches the current member attended (for upload dropdown)
+    current_member = get_current_member()
+    attended_lunches = Lunch.query.join(Attendance).filter(
+        Attendance.member_id == current_member.id
+    ).order_by(Lunch.date.desc()).limit(20).all()
     
     # Get all lunches for the calendar
     all_lunches = Lunch.query.order_by(Lunch.date.asc()).all()
@@ -54,9 +57,9 @@ def index():
     members = Member.query.order_by(Member.name).all()
     locations = Location.query.order_by(Location.name).all()
     
-    return render_template('member/gallery.html', 
-                           photos=photos, 
-                           lunches=recent_lunches, 
+    return render_template('member/gallery.html',
+                           photos=photos,
+                           lunches=attended_lunches,
                            lunches_with_photos=lunches_with_photos,
                            lunches_json=lunches_json,
                            members=members,
@@ -65,7 +68,7 @@ def index():
                            current_location_id=location_id,
                            current_tagged_member_id=tagged_member_id,
                            current_tagged_member_id_raw=tagged_member_id_raw,
-                           current_member=get_current_member())
+                           current_member=current_member)
 
 @gallery_bp.route('/lunch/<int:lunch_id>/attendees')
 @member_required
@@ -88,16 +91,27 @@ def upload():
     if 'photo' not in request.files:
         flash('No file part', 'error')
         return redirect(url_for('gallery.index'))
-        
+
     file = request.files['photo']
     lunch_id = request.form.get('lunch_id')
     caption = request.form.get('caption')
     tagged_member_ids = request.form.getlist('tagged_members')
-    
+
     if file.filename == '':
         flash('No selected file', 'error')
         return redirect(url_for('gallery.index'))
-        
+
+    # Verify member attended this lunch
+    current_member = get_current_member()
+    if lunch_id:
+        attendance = Attendance.query.filter_by(
+            lunch_id=lunch_id,
+            member_id=current_member.id
+        ).first()
+        if not attendance:
+            flash('You can only upload photos for lunches you attended.', 'error')
+            return redirect(url_for('gallery.index'))
+
     if file:
         # Upload to R2
         file_url = storage_service.upload_file(file)

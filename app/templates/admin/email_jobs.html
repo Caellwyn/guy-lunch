@@ -69,14 +69,15 @@
         </div>
     </div>
 
-    <!-- Warning Banner -->
-    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+    <!-- Info Banner -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
         <div class="flex items-start">
-            <span class="text-yellow-500 text-xl mr-3">&#9888;</span>
+            <span class="text-blue-500 text-xl mr-3">&#9432;</span>
             <div>
-                <h3 class="text-yellow-800 font-semibold">Caution: Real Emails</h3>
-                <p class="text-yellow-700 text-sm">
-                    Triggering these jobs will send real emails to members. Use "Dry Run" to test without sending.
+                <h3 class="text-blue-800 font-semibold">Testing Emails</h3>
+                <p class="text-blue-700 text-sm">
+                    Use <strong>"Live Preview"</strong> to test emails in your browser with working links (no email sent).
+                    Use <strong>"Send Now"</strong> only when ready to send real emails to members.
                 </p>
             </div>
         </div>
@@ -98,12 +99,10 @@
                 asking them to select a restaurant.
             </p>
             <div class="flex gap-2">
-                <form action="{{ url_for('admin.trigger_email_job', job_name='host_confirmation') }}" method="POST" class="inline">
-                    <input type="hidden" name="dry_run" value="true">
-                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
-                        Dry Run
-                    </button>
-                </form>
+                <a href="{{ url_for('admin.live_preview_email', email_type='host_confirmation') }}"
+                   class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-sm hover:bg-purple-200 transition-colors">
+                    Live Preview
+                </a>
                 <form action="{{ url_for('admin.trigger_email_job', job_name='host_confirmation') }}" method="POST" class="inline"
                       onsubmit="return confirm('Send host confirmation email to {{ hosting_queue[0].name if hosting_queue else 'the next host' }}?');">
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
@@ -130,12 +129,10 @@
                 {% endif %}
             </p>
             <div class="flex gap-2">
-                <form action="{{ url_for('admin.trigger_email_job', job_name='secretary_reminder') }}" method="POST" class="inline">
-                    <input type="hidden" name="dry_run" value="true">
-                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
-                        Dry Run
-                    </button>
-                </form>
+                <a href="{{ url_for('admin.live_preview_email', email_type='secretary_reminder') }}"
+                   class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-sm hover:bg-purple-200 transition-colors">
+                    Live Preview
+                </a>
                 <form action="{{ url_for('admin.trigger_email_job', job_name='secretary_reminder') }}" method="POST" class="inline"
                       onsubmit="return confirm('Send secretary reminder email?');">
                     <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
@@ -161,12 +158,10 @@
                 {% endif %}
             </p>
             <div class="flex gap-2">
-                <form action="{{ url_for('admin.trigger_email_job', job_name='announcement') }}" method="POST" class="inline">
-                    <input type="hidden" name="dry_run" value="true">
-                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
-                        Dry Run
-                    </button>
-                </form>
+                <a href="{{ url_for('admin.live_preview_email', email_type='announcement') }}"
+                   class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-sm hover:bg-purple-200 transition-colors">
+                    Live Preview
+                </a>
                 <form action="{{ url_for('admin.trigger_email_job', job_name='announcement') }}" method="POST" class="inline"
                       onsubmit="return confirm('Send announcement to ALL members?');">
                     <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-purple-700 transition-colors">
@@ -190,12 +185,10 @@
                 Requires attendance to be logged first.
             </p>
             <div class="flex gap-2">
-                <form action="{{ url_for('admin.trigger_email_job', job_name='rating_request') }}" method="POST" class="inline">
-                    <input type="hidden" name="dry_run" value="true">
-                    <button type="submit" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition-colors">
-                        Dry Run
-                    </button>
-                </form>
+                <a href="{{ url_for('admin.live_preview_email', email_type='rating_request') }}"
+                   class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-sm hover:bg-purple-200 transition-colors">
+                    Live Preview
+                </a>
                 <form action="{{ url_for('admin.trigger_email_job', job_name='rating_request') }}" method="POST" class="inline"
                       onsubmit="return confirm('Send rating requests to attendees?');">
                     <button type="submit" class="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-700 transition-colors">

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_member.name }} - Player Profile{% endblock %}
+
+{% block body_class %}bg-stadium-grass{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+    <!-- Back Link -->
+    <div class="mb-4">
+        <a href="{{ url_for('member.dashboard') }}" class="text-white hover:text-yellow-300 text-sm font-condensed uppercase tracking-wider">
+            ← Back to Locker Room
+        </a>
+    </div>
+
+    <!-- Profile Header Card -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div class="flex flex-col md:flex-row gap-6 items-start">
+
+            <!-- Profile Picture -->
+            <div class="flex-shrink-0">
+                {% if profile_member.profile_picture_url %}
+                    <img src="{{ profile_member.profile_picture_url }}"
+                         alt="{{ profile_member.name }}"
+                         class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-green-700 shadow-lg">
+                {% else %}
+                    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-green-700 border-4 border-green-800 shadow-lg flex items-center justify-center">
+                        <span class="text-5xl text-white">{{ profile_member.name[0].upper() }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Name and Contact Info -->
+            <div class="flex-grow">
+                <h1 class="font-jersey text-4xl md:text-5xl text-green-800 tracking-wide mb-2">
+                    {{ profile_member.name }}
+                </h1>
+
+                {% if profile_member.business %}
+                    <p class="font-condensed text-xl text-red-600 uppercase tracking-wider mb-3">
+                        {{ profile_member.business }}
+                    </p>
+                {% endif %}
+
+                <!-- Contact Info (only if public or own profile) -->
+                {% if is_own_profile or profile_member.profile_public %}
+                    <div class="space-y-1 font-condensed text-gray-700">
+                        {% if profile_member.phone %}
+                            <p><span class="text-gray-500">Phone:</span> <span>{{ profile_member.phone }}</span></p>
+                        {% endif %}
+                        {% if profile_member.email and (is_own_profile or profile_member.profile_public) %}
+                            <p><span class="text-gray-500">Email:</span> <span>{{ profile_member.email }}</span></p>
+                        {% endif %}
+                        {% if profile_member.website %}
+                            <p>
+                                <span class="text-gray-500">Website:</span>
+                                <a href="{{ profile_member.website }}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                    {{ profile_member.website | replace('https://', '') | replace('http://', '') }}
+                                </a>
+                            </p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 italic font-condensed">Contact info is private</p>
+                {% endif %}
+
+                <!-- Edit Button (own profile only) -->
+                {% if is_own_profile %}
+                    <div class="mt-4">
+                        <a href="{{ url_for('member.edit_profile') }}"
+                           class="inline-block bg-blue-600 text-white px-4 py-2 rounded font-condensed uppercase tracking-wider hover:bg-blue-700 transition-colors">
+                            Edit Profile
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Stats Column -->
+            <div class="flex-shrink-0 text-center md:text-right">
+                <div class="bg-green-800 rounded-lg p-4 shadow-inner">
+                    <div class="font-condensed text-xs text-green-300 uppercase tracking-wider mb-1">Member Since</div>
+                    <div class="font-scoreboard text-white text-lg">
+                        {% if profile_member.first_attended %}
+                            {{ profile_member.first_attended.strftime('%b %Y') }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex gap-4 mt-3">
+                    <div class="text-center bg-gray-100 rounded px-3 py-2">
+                        <div class="font-scoreboard text-3xl text-green-700">{{ total_attended }}</div>
+                        <div class="font-condensed text-xs text-gray-600 uppercase">Games</div>
+                    </div>
+                    <div class="text-center bg-gray-100 rounded px-3 py-2">
+                        <div class="font-scoreboard text-3xl text-red-600">{{ times_hosted }}</div>
+                        <div class="font-condensed text-xs text-gray-600 uppercase">Hosted</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio -->
+        {% if profile_member.bio and (is_own_profile or profile_member.profile_public) %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="font-condensed text-sm text-gray-500 uppercase tracking-wider mb-2">About</h3>
+                <p class="text-gray-700 font-condensed">{{ profile_member.bio }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Photos Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Photos Uploaded -->
+        <div class="texture-paper p-6 rounded-lg">
+            <h2 class="font-jersey text-2xl text-gray-800 mb-4 flex items-center gap-2">
+                <span>Photos by {{ profile_member.name.split()[0] }}</span>
+            </h2>
+
+            {% if uploaded_photos %}
+                <div class="grid grid-cols-3 gap-2">
+                    {% for photo in uploaded_photos %}
+                        <a href="{{ url_for('gallery.index') }}?photo={{ photo.id }}" class="block aspect-square">
+                            <img src="{{ photo.file_url }}" alt="Photo" class="w-full h-full object-cover rounded shadow hover:opacity-80 transition-opacity">
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('gallery.index') }}?uploader={{ profile_member.id }}"
+                   class="block mt-4 text-center text-blue-600 font-condensed hover:underline">
+                    View all photos →
+                </a>
+            {% else %}
+                <p class="text-gray-500 italic font-condensed text-center py-8">No photos uploaded yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Photos Tagged In -->
+        <div class="texture-paper p-6 rounded-lg">
+            <h2 class="font-jersey text-2xl text-gray-800 mb-4 flex items-center gap-2">
+                <span>Photos with {{ profile_member.name.split()[0] }}</span>
+            </h2>
+
+            {% if tagged_photos %}
+                <div class="grid grid-cols-3 gap-2">
+                    {% for photo in tagged_photos %}
+                        <a href="{{ url_for('gallery.index') }}?photo={{ photo.id }}" class="block aspect-square">
+                            <img src="{{ photo.file_url }}" alt="Photo" class="w-full h-full object-cover rounded shadow hover:opacity-80 transition-opacity">
+                        </a>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('gallery.index') }}?tagged={{ profile_member.id }}"
+                   class="block mt-4 text-center text-blue-600 font-condensed hover:underline">
+                    View all photos →
+                </a>
+            {% else %}
+                <p class="text-gray-500 italic font-condensed text-center py-8">Not tagged in any photos yet</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

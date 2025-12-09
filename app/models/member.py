@@ -20,16 +20,24 @@ class Member(db.Model):
     # Magic link authentication fields
     magic_link_token = db.Column(db.String(64), unique=True, nullable=True)
     magic_link_expires = db.Column(db.DateTime, nullable=True)
-    
+
+    # Profile fields
+    phone = db.Column(db.String(20), nullable=True)
+    business = db.Column(db.String(200), nullable=True)  # Business/company name
+    website = db.Column(db.String(200), nullable=True)   # URL
+    bio = db.Column(db.Text, nullable=True)              # Short bio
+    profile_picture_url = db.Column(db.String(500), nullable=True)  # R2 storage URL
+    profile_public = db.Column(db.Boolean, default=False)  # Whether contact info is public
+
     # Relationships
     hosted_lunches = db.relationship('Lunch', backref='host', lazy='dynamic')
     attendances = db.relationship('Attendance', backref='member', lazy='dynamic')
     ratings = db.relationship('Rating', backref='member', lazy='dynamic')
     uploaded_photos = db.relationship('Photo', backref='uploader', lazy='dynamic')
-    
+
     def __repr__(self):
         return f'<Member {self.name}>'
-    
+
     @property
     def is_active(self):
         return self.member_type == 'regular'

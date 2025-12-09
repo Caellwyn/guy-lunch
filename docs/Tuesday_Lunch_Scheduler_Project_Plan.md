@@ -906,88 +906,45 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - ✓ All touch targets meet 44px minimum
 - ✓ Color contrast passes WCAG AA
 
-### 4.3: Photo Gallery & Member Portal (6-8 hours)
+### 4.3: Photo Gallery & Member Portal (6-8 hours) ✅ COMPLETE
 
 **THIS IS THE KILLER FEATURE - Mobile-first design is critical**  
 **Dependencies:** Phase 4.0 complete (member authentication required)
 
-**4.3.1: Photo Upload (Mobile-First) (3 hours)**
+**4.3.1: Photo Upload (Mobile-First) (3 hours)** ✅ COMPLETE
 
-- [ ] **Choose and set up image storage**
-  - **Recommended for MVP:** Local filesystem
-    - Create `/static/uploads/` directory in project
-    - Ensure directory is writable
-    - Configure app to serve static files from this directory
-  - **Alternative:** AWS S3/Cloudflare R2 (if you want to start with cloud storage)
-  - **Decision point:** Local is simpler for MVP, migrate to cloud later if needed
+- [x] **Choose and set up image storage**
+  - **Implemented:** Cloudflare R2 (S3-compatible cloud storage)
+    - Photos stored in R2 bucket via boto3
+    - Public URL configured for image serving
+    - `storage_service.py` handles all R2 operations
 
-- [ ] **Create file upload route and basic validation**
-  - Create route: `POST /upload-photo`
-  - Require authentication (check if user logged in)
-  - Accept: `multipart/form-data`
-  - Validate file types: Allow only jpg, jpeg, png, gif, webp
-  - Validate file size: Maximum 10MB per file
-  - Accept multiple files (up to 10 at once)
-  - Return error for invalid files with clear message
+- [x] **Create file upload route and basic validation**
+  - Route: `POST /member/gallery/upload`
+  - Requires authentication (member login required)
+  - Accepts: `multipart/form-data`
+  - Validates file types and size
 
-- [ ] **Implement client-side image compression (JavaScript)**
-  - Add compression function before upload (see Appendix for code)
-  - Target: Max 1920px width, 80% JPEG quality
-  - Result: Compressed images < 2MB each
-  - Show compression progress to user
-  - Test: Upload 8MB photo, verify it's compressed to < 2MB before sending
-
-- [ ] **Build mobile-optimized upload form**
+- [x] **Build mobile-optimized upload form**
   - **File input:**
     - `<input type="file" accept="image/*" capture="camera" multiple>`
-    - On iOS: Opens camera or photo library
-    - On Android: Opens camera or gallery
-    - Allows multiple file selection
+    - Works on iOS and Android
   - **Lunch date selector:**
-    - Dropdown showing recent lunches (last 8 weeks)
-    - Format: "Dec 17, 2024 - Zulo's Board Game Cafe"
-    - Default: Most recent Tuesday (query database for this)
-    - If no lunch this week yet, show upcoming Tuesday
-  - **Caption field (optional):**
-    - Text input, placeholder: "Add a caption..."
-    - Max length: 200 characters
-    - autocomplete="off" (prevents autofill on mobile)
+    - Dropdown showing recent lunches
+    - Format: "Date - Location Name"
   - **Member tagging:**
-    - Query database: Get members who attended selected lunch
-    - Display: Large checkboxes (44px touch targets)
-    - Pre-select the uploader (current logged-in user)
-    - Allow tagging only members who were actually there
-  - **Upload button:**
-    - Full-width on mobile, auto-width on desktop
-    - Text: "Upload X Photos" (X = number of files selected)
-    - Disabled during upload
-    - Shows progress: "Uploading 2 of 5..."
+    - Dynamic loading of attendees via AJAX
+    - Only members who attended the selected lunch can be tagged
+    - Large checkboxes for mobile touch targets
 
-- [ ] **Implement server-side upload processing**
-  - For each uploaded file:
-    1. Re-validate file type and size on server (don't trust client)
-    2. Generate unique filename to prevent collisions:
-       - Format: `{timestamp}_{random_8char}_{sanitized_original}.jpg`
-       - Example: `1702846392_a3f9k2m1_lunch.jpg`
-       - Sanitize: Remove spaces, special chars from original name
-    3. Save file to uploads directory
-    4. Generate thumbnail using Pillow/PIL:
-       - Max dimensions: 300x300px (maintains aspect ratio)
-       - Save as: `{filename}_thumb.jpg`
-       - Quality: 85%
-    5. Store file paths (relative to static directory)
-  - See Appendix for thumbnail generation code
+- [x] **Implement server-side upload processing**
+  - Photos uploaded to Cloudflare R2
+  - File URL returned and stored in database
+  - Caption support included
 
-- [ ] **Save photo metadata to database**
-  - Insert into `photos` table:
-    - `lunch_id`: From form dropdown
-    - `uploaded_by`: Current logged-in member ID
-    - `file_url`: Path to full image (e.g., `/static/uploads/image.jpg`)
-    - `thumbnail_url`: Path to thumbnail
-    - `caption`: From form (can be empty)
-    - `created_at`: Current timestamp
-  - Get the inserted photo ID
-  - For each tagged member:
+- [x] **Save photo metadata to database**
+  - Insert into `photos` table with lunch_id, uploaded_by, file_url
+  - Insert into `photo_tags` table for tagged members
     - Insert into `photo_tags` table:
       - `photo_id`: Just inserted
       - `member_id`: Tagged member ID
@@ -1039,35 +996,34 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 - ✓ Uploaded photos immediately visible in gallery (refresh gallery page)
 - ✓ Uploader attribution displays: "Photo by [Name]"
 
-**4.3.2: Photo Gallery (Mobile-First) (2 hours)**
+**4.3.2: Photo Gallery (Mobile-First) (2 hours)** ✅ COMPLETE
 
-- [ ] **Gallery home (mobile-optimized)**
+- [x] **Gallery home (mobile-optimized)**
   - Timeline view (most recent first)
   - Grouped by lunch date
-  - Large thumbnails (full width on mobile)
-  - Tap to view full photo
-  - Infinite scroll or pagination
+  - Responsive grid (photos sized appropriately)
+  - Click to view full photo in lightbox
+  - Scroll position preserved on filter changes
 
-- [ ] **Individual photo view**
-  - Full-screen photo
-  - Swipe left/right for next/previous
+- [x] **Individual photo view (Lightbox)**
+  - Full-size photo display
   - Display: location, date, uploader
   - Show tagged members
-  - Download button
-  - Delete (if you uploaded it)
-  - Back to gallery
+  - Tag/untag members (only attendees)
+  - Delete button (if you uploaded it)
+  - Close to return to gallery
 
-- [ ] **Browse filters (mobile-friendly)**
-  - By date (timeline - default view)
-  - By location (list of locations → photos)
-  - By member (your photos, photos you're tagged in)
-  - Simple tab navigation at top
+- [x] **Browse filters (mobile-friendly)**
+  - Filter by location (Stadium dropdown)
+  - Filter by tagged member
+  - Filters persist on selection
+  - Local timezone display for upload times
 
-- [ ] **Gallery UI polish**
-  - Responsive grid (1 col mobile, 3 cols desktop)
-  - Lazy loading images
-  - Smooth transitions
-  - Touch-optimized (swipe, pinch-zoom)
+- [x] **Gallery UI polish**
+  - Responsive grid layout
+  - Stadium theme styling
+  - Lightbox with smooth transitions
+  - Touch-optimized controls
 
 **Testable Milestones:**
 - ✓ Gallery displays all photos
@@ -1146,13 +1102,181 @@ Phase 5 (Testing & Deploy) ← Requires everything above
 
 **Testable Milestones:**
 - ✓ Everything works on iPhone Safari
-- ✓ Everything works on Android Chrome  
+- ✓ Everything works on Android Chrome
 - ✓ Camera access works
 - ✓ Photos upload on cellular connection
 - ✓ Images don't take forever to load
 - ✓ All buttons easy to tap
 - ✓ No zoom required to use any feature
 - ✓ Swipe gestures feel natural
+
+---
+
+### 4.5: Phase 4 Completion - Final Features (4-6 hours)
+
+**Added December 2024 - Final polish before Phase 5**
+
+**4.5.0: Magic Link Session Bug Fix (HIGH PRIORITY)**
+
+- [ ] **Fix 30-day session persistence not working**
+  - **Bug:** Members must request new magic link every visit instead of staying logged in for 30 days
+  - **Expected:** After clicking magic link, session should persist for 30 days
+  - **Investigation areas:**
+    - Check `session.permanent = True` is being set correctly
+    - Verify `PERMANENT_SESSION_LIFETIME` is configured in Flask app config
+    - Check if `SECRET_KEY` is consistent between deploys (if it changes, sessions invalidate)
+    - Verify cookies are being set with proper expiration
+    - Check if Railway deployment is clearing session storage
+  - **Fix:** Ensure Flask permanent session configuration is correct
+  - **Test:** Log in via magic link, close browser, reopen next day - should still be logged in
+
+**Testable Milestones:**
+- ✓ Session persists after closing and reopening browser
+- ✓ Session persists for 30 days without requiring new magic link
+- ✓ Session works correctly in production (Railway)
+
+**4.5.1: Dashboard Quick Actions (1 hour)**
+
+- [ ] **Add "Post Image" shortcut button on member dashboard**
+  - Prominent button linking to `/member/gallery` with upload modal trigger
+  - Only show if member has attended at least one lunch
+  - Stadium-themed styling consistent with dashboard
+
+- [ ] **Add "Rate Last Lunch" button on member dashboard**
+  - Show only if member attended most recent completed lunch
+  - Show only if member hasn't already rated that lunch
+  - Link to rating submission page with comment field
+  - Query: Find most recent Lunch where member has Attendance record, status='completed'
+  - Check: No Rating record exists for this member + lunch combo
+
+- [ ] **Restrict photo uploads to attended lunches only**
+  - In gallery upload, filter lunch dropdown to only show lunches where member has Attendance record
+  - Server-side validation: reject upload if member didn't attend selected lunch
+  - Display helpful message if no attended lunches available
+
+**Testable Milestones:**
+- ✓ "Post Image" button appears on dashboard for members with attendance history
+- ✓ "Rate Last Lunch" button only shows when applicable (attended + not yet rated)
+- ✓ Photo upload dropdown only shows lunches member attended
+- ✓ Server rejects upload attempts for non-attended lunches
+
+**4.5.2: Rating Comments Enhancement (1 hour)**
+
+- [ ] **Add comments field to member rating submission page**
+  - Create new route `/member/rate/<lunch_id>` for member-initiated ratings
+  - Display lunch details (date, location, host)
+  - Star rating selector (1-5)
+  - Text area for optional comment
+  - Submit saves to Rating table (rating + comment fields already exist)
+  - Redirect to dashboard with success message
+
+- [ ] **Show rating comments on location detail view (host confirmation)**
+  - When host clicks a location during confirmation, show modal/expanded view
+  - Display: name, address, phone, Google rating, price level, cuisine
+  - Display: Group average rating, visit count, last visited date
+  - Display: Member comments from past ratings (most recent first, limit 10)
+  - Format: "[Rating stars] - [Comment]" - [Member name], [Date]
+  - Only show comments that have text (skip empty comments)
+
+**Testable Milestones:**
+- ✓ Members can submit ratings with comments from dashboard
+- ✓ Host confirmation page shows location details with member comments
+- ✓ Comments display with member name and date
+- ✓ Empty comments are not displayed
+
+**4.5.3: Host Swap Functionality (1.5 hours) - HIGH PRIORITY**
+
+- [ ] **Build host swap interface in admin dashboard**
+  - New route: `/admin/hosting-queue/swap`
+  - Display current hosting queue (top 10 members)
+  - Two-step selection: "Select first member" → "Select second member"
+  - Show confirmation: "Swap [Name A] (position X) with [Name B] (position Y)?"
+  - Swap logic: Exchange `attendance_since_hosting` values between two members
+  - After swap, redirect to hosting queue with success message
+
+- [ ] **Add swap button to hosting queue page**
+  - Button: "Swap Hosts" on `/admin/hosting-queue`
+  - Links to swap interface
+  - Mobile-friendly design (large touch targets)
+
+- [ ] **Validation and edge cases**
+  - Cannot swap member with themselves
+  - Both members must be active (member_type='regular')
+  - Log swap action for audit trail (optional: create HostSwapLog table)
+
+**Testable Milestones:**
+- ✓ Admin can access swap interface from hosting queue
+- ✓ Can select two members and swap their positions
+- ✓ Queue re-orders correctly after swap
+- ✓ Swap works on mobile
+
+**4.5.4: Member Profile System (2-3 hours)**
+
+- [ ] **Add profile fields to Member model (database migration)**
+  - `phone` - String(20), nullable
+  - `business` - String(200), nullable (business/company name)
+  - `website` - String(200), nullable (URL)
+  - `bio` - Text, nullable (short bio)
+  - `profile_picture_url` - String(500), nullable (R2 storage URL)
+  - `profile_public` - Boolean, default=False (whether profile is publicly visible)
+  - Run migration: `flask db migrate -m "Add member profile fields"`
+
+- [ ] **Build member profile edit page (`/member/profile/edit`)**
+  - Form fields:
+    - Name (required) - updates `member.name` which reflects everywhere
+    - Email (required, validated) - updates `member.email`
+    - Phone (optional)
+    - Business (optional)
+    - Website (optional, URL validated)
+    - Bio (optional, text area, 500 char limit)
+    - Profile Picture (optional, file upload to R2)
+    - "Make profile public" checkbox
+  - Save updates member record
+  - Profile picture upload uses same R2 storage service as gallery photos
+  - Success message and redirect to profile view
+
+- [ ] **Build public profile view page (`/member/profile/<member_id>`)**
+  - Any logged-in member can view any other member's profile
+  - Display member info based on `profile_public` setting:
+    - If public OR viewing own profile: Show all profile fields (phone, business, website, bio)
+    - If private AND not own profile: Show only name, stats, and "Contact info is private"
+  - Always visible (regardless of privacy setting):
+    - Profile picture (or placeholder)
+    - Name
+    - Stats: Lunches attended, times hosted, member since
+    - "Photos by [Name]" - grid of photos uploaded by this member
+    - "Photos with [Name]" - grid of photos where member is tagged
+  - Private fields (only shown if profile_public=True or viewing own):
+    - Phone, Business, Website, Bio
+  - Edit button (only if viewing own profile)
+
+- [ ] **Link member names to profiles throughout app**
+  - Dashboard "At Bat / On Deck / In the Hole" names → link to `/member/profile/<id>`
+  - Lineup page member names → link to profiles
+  - Gallery photo "uploaded by" and tagged names → link to profiles
+  - Attendance history host names → link to profiles
+
+- [ ] **Add admin profile editing (`/admin/members/<id>/profile`)**
+  - Admin can edit any member's profile fields
+  - Same form as member edit, but accessed from admin member list
+  - Add "Edit Profile" link to admin member edit page
+  - Admin can toggle `profile_public` for any member
+
+- [ ] **Link profiles throughout app**
+  - Member names in lineup, gallery, attendance become links to profile
+  - Profile link in member dashboard header
+  - "View Profile" button on member dashboard
+
+**Testable Milestones:**
+- ✓ Database migration adds all profile fields
+- ✓ Members can edit their own profile
+- ✓ Name changes reflect in lineup, gallery, attendance history
+- ✓ Profile picture uploads to R2 and displays correctly
+- ✓ Public profiles visible to other logged-in members
+- ✓ Private profiles show "Profile is private" message
+- ✓ Admin can edit any member's profile
+- ✓ Member's uploaded photos appear on their profile
+- ✓ Photos member is tagged in appear on their profile
 
 ---
 

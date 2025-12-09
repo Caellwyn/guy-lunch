@@ -56,15 +56,13 @@ class StorageService:
                 ExtraArgs={'ContentType': file_obj.content_type}
             )
 
-            # Return the URL
-            if self.public_domain:
+            # Return the URL - read public_domain fresh each time in case it changed
+            public_domain = os.environ.get('R2_PUBLIC_DOMAIN')
+            if public_domain:
                 # If using a custom domain or R2.dev subdomain
-                return f"{self.public_domain.rstrip('/')}/{key}"
+                return f"{public_domain.rstrip('/')}/{key}"
             else:
-                # Fallback to signed URL or just return the key if we can't generate a public link easily
-                # For now, let's return the key so the frontend knows it succeeded, 
-                # but in a real app we might want a signed URL for private buckets.
-                # Assuming public read access for the bucket for now.
+                # Fallback to just return the key
                 return key
 
         except ClientError as e:

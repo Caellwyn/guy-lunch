@@ -47,7 +47,13 @@
                                        {% if loop.first %}checked{% endif %}
                                        onchange="selectExisting()">
                                 <div class="ml-3 flex-1">
-                                    <div class="font-medium text-gray-900">{{ location.name }}</div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900">{{ location.name }}</span>
+                                        <button type="button" onclick="showLocationDetails({{ location.id }})"
+                                                class="text-blue-600 hover:text-blue-800 text-xs underline">
+                                            More info
+                                        </button>
+                                    </div>
                                     {% if location.address %}
                                         <div class="text-sm text-gray-500">{{ location.address }}</div>
                                     {% endif %}
@@ -193,6 +199,33 @@
     <p class="text-center text-sm text-gray-500">
         Please respond by Friday morning so we have time to make a reservation.
     </p>
+</div>
+
+<!-- Location Details Modal -->
+<div id="location-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modal-location-name" class="text-xl font-bold text-gray-900"></h3>
+                <button onclick="closeLocationModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="modal-location-details" class="space-y-4">
+                <!-- Details populated by JS -->
+            </div>
+
+            <div id="modal-comments-section" class="mt-6 pt-4 border-t">
+                <h4 class="font-semibold text-gray-800 mb-3">Member Reviews</h4>
+                <div id="modal-comments" class="space-y-3">
+                    <!-- Comments populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -402,5 +435,111 @@ function selectNew() {
     document.getElementById('selection_type').value = 'new';
     document.querySelectorAll('input[name=location_id]').forEach(r => r.checked = false);
 }
+
+// Location details modal
+async function showLocationDetails(locationId) {
+    const modal = document.getElementById('location-modal');
+    const nameEl = document.getElementById('modal-location-name');
+    const detailsEl = document.getElementById('modal-location-details');
+    const commentsEl = document.getElementById('modal-comments');
+    const commentsSectionEl = document.getElementById('modal-comments-section');
+
+    // Show loading state
+    nameEl.textContent = 'Loading...';
+    detailsEl.innerHTML = '<p class="text-gray-500">Loading details...</p>';
+    commentsEl.innerHTML = '';
+    modal.classList.remove('hidden');
+
+    try {
+        const response = await fetch(`/api/locations/${locationId}/details`);
+        const data = await response.json();
+
+        if (data.success) {
+            const loc = data.location;
+            nameEl.textContent = loc.name;
+
+            // Build details HTML
+            let detailsHtml = '';
+
+            if (loc.address) {
+                detailsHtml += `<p class="text-gray-600"><strong>Address:</strong> ${escapeHtml(loc.address)}</p>`;
+            }
+            if (loc.phone) {
+                detailsHtml += `<p class="text-gray-600"><strong>Phone:</strong> ${escapeHtml(loc.phone)}</p>`;
+            }
+            if (loc.cuisine_type) {
+                detailsHtml += `<p class="text-gray-600"><strong>Cuisine:</strong> ${escapeHtml(loc.cuisine_type)}</p>`;
+            }
+
+            // Ratings
+            detailsHtml += '<div class="flex flex-wrap gap-3 mt-3">';
+            if (loc.avg_group_rating) {
+                const stars = '★'.repeat(Math.round(loc.avg_group_rating)) + '☆'.repeat(5 - Math.round(loc.avg_group_rating));
+                detailsHtml += `<span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">Group: ${loc.avg_group_rating.toFixed(1)}/5 ${stars}</span>`;
+            }
+            if (loc.google_rating) {
+                detailsHtml += `<span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">Google: ${loc.google_rating}/5</span>`;
+            }
+            if (loc.price_level) {
+                detailsHtml += `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">${'$'.repeat(loc.price_level)}</span>`;
+            }
+            detailsHtml += '</div>';
+
+            // Visit stats
+            detailsHtml += '<div class="mt-3 text-sm text-gray-500">';
+            detailsHtml += `<p>Visited ${loc.visit_count} time${loc.visit_count !== 1 ? 's' : ''} by the group</p>`;
+            if (loc.last_visited) {
+                detailsHtml += `<p>Last visit: ${loc.last_visited}</p>`;
+            }
+            detailsHtml += '</div>';
+
+            detailsEl.innerHTML = detailsHtml;
+
+            // Comments
+            if (loc.comments && loc.comments.length > 0) {
+                commentsSectionEl.classList.remove('hidden');
+                let commentsHtml = '';
+                for (const comment of loc.comments) {
+                    const stars = '★'.repeat(comment.rating) + '☆'.repeat(5 - comment.rating);
+                    commentsHtml += `
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="text-yellow-500">${stars}</span>
+                                <span class="text-gray-600">—</span>
+                                <span class="font-medium text-gray-700">${escapeHtml(comment.member_name)}</span>
+                                ${comment.date ? `<span class="text-gray-400 text-xs">${comment.date}</span>` : ''}
+                            </div>
+                            <p class="text-gray-700 mt-1">${escapeHtml(comment.comment)}</p>
+                        </div>
+                    `;
+                }
+                commentsEl.innerHTML = commentsHtml;
+            } else {
+                commentsSectionEl.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching location details:', error);
+        detailsEl.innerHTML = '<p class="text-red-500">Error loading details</p>';
+    }
+}
+
+function closeLocationModal() {
+    document.getElementById('location-modal').classList.add('hidden');
+}
+
+// Close modal on backdrop click
+document.getElementById('location-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeLocationModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLocationModal();
+    }
+});
 </script>
 {% endblock %}

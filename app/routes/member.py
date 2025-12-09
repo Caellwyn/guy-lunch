@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 import secrets
 
 from app import db
-from app.models import Member, Lunch, Attendance, Location
+from app.models import Member, Lunch, Attendance, Location, Rating
 
 member_bp = Blueprint('member', __name__, url_prefix='/member')
 
@@ -30,9 +30,9 @@ def member_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('member_id'):
-            # In local dev, auto-login as first member
+            # In local dev, auto-login as Josh Johnson (or first member as fallback)
             if is_local_development():
-                member = Member.query.first()
+                member = Member.query.filter_by(email='caellwyn@gmail.com').first() or Member.query.first()
                 if member:
                     session['member_id'] = member.id
                     session['member_name'] = member.name
@@ -164,16 +164,19 @@ def dev_login():
     """Backdoor for development to skip email."""
     if not current_app.debug:
         return "Not available in production", 403
-    
-    # Log in as the first member found
-    member = Member.query.first()
+
+    # Clear any existing session first
+    session.clear()
+
+    # Log in as Josh Johnson (or first member as fallback)
+    member = Member.query.filter_by(email='caellwyn@gmail.com').first() or Member.query.first()
     if not member:
         return "No members found in database", 404
-        
+
     session['member_id'] = member.id
     session['member_name'] = member.name
     session.permanent = True
-    
+
     flash(f'Dev Login Successful as {member.name}', 'success')
     return redirect(url_for('member.dashboard'))
 
@@ -281,6 +284,22 @@ def dashboard():
     total_attended = Attendance.query.filter_by(member_id=member.id).count()
     total_hosted = member.total_hosting_count or 0
 
+    # Check for ratable lunch (most recent completed lunch they attended but haven't rated)
+    ratable_lunch = None
+    recent_attended_lunch = Lunch.query.join(Attendance).filter(
+        Attendance.member_id == member.id,
+        Lunch.status == 'completed'
+    ).order_by(Lunch.date.desc()).first()
+
+    if recent_attended_lunch:
+        # Check if they've already rated it
+        existing_rating = Rating.query.filter_by(
+            lunch_id=recent_attended_lunch.id,
+            member_id=member.id
+        ).first()
+        if not existing_rating or existing_rating.rating is None:
+            ratable_lunch = recent_attended_lunch
+
     return render_template('member/dashboard.html',
                            member=member,
                            position=position,
@@ -292,7 +311,8 @@ def dashboard():
                            next_tuesday=next_tuesday,
                            recent_attendances=recent_attendances,
                            total_attended=total_attended,
-                           total_hosted=total_hosted)
+                           total_hosted=total_hosted,
+                           ratable_lunch=ratable_lunch)
 
 
 @member_bp.route('/lineup')
@@ -386,3 +406,182 @@ def gallery():
 
     # Placeholder for Phase 4.3
     return render_template('member/gallery.html', member=member)
+
+
+# ============== MEMBER PROFILES ==============
+
+@member_bp.route('/profile')
+@member_required
+def my_profile():
+    """Redirect to current member's profile."""
+    member = get_current_member()
+    if not member:
+        return redirect(url_for('member.login'))
+    return redirect(url_for('member.view_profile', member_id=member.id))
+
+
+@member_bp.route('/profile/<int:member_id>')
+@member_required
+def view_profile(member_id):
+    """View a member's profile."""
+    current_member = get_current_member()
+    if not current_member:
+        return redirect(url_for('member.login'))
+
+    profile_member = Member.query.get_or_404(member_id)
+    is_own_profile = (current_member.id == profile_member.id)
+
+    # Get stats
+    from app.models import Photo, PhotoTag
+    total_attended = Attendance.query.filter_by(member_id=profile_member.id).count()
+    times_hosted = profile_member.total_hosting_count or 0
+
+    # Get photos uploaded by this member
+    uploaded_photos = Photo.query.filter_by(uploaded_by=profile_member.id).order_by(
+        Photo.created_at.desc()
+    ).limit(12).all()
+
+    # Get photos where this member is tagged
+    tagged_photos = Photo.query.join(PhotoTag).filter(
+        PhotoTag.member_id == profile_member.id
+    ).order_by(Photo.created_at.desc()).limit(12).all()
+
+    return render_template('member/profile.html',
+                           member=current_member,
+                           profile_member=profile_member,
+                           is_own_profile=is_own_profile,
+                           total_attended=total_attended,
+                           times_hosted=times_hosted,
+                           uploaded_photos=uploaded_photos,
+                           tagged_photos=tagged_photos)
+
+
+@member_bp.route('/profile/edit', methods=['GET', 'POST'])
+@member_required
+def edit_profile():
+    """Edit your own profile."""
+    member = get_current_member()
+    if not member:
+        return redirect(url_for('member.login'))
+
+    if request.method == 'POST':
+        # Get form data
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        phone = request.form.get('phone', '').strip() or None
+        business = request.form.get('business', '').strip() or None
+        website = request.form.get('website', '').strip() or None
+        bio = request.form.get('bio', '').strip() or None
+        profile_public = request.form.get('profile_public') == 'on'
+
+        # Validation
+        if not name:
+            flash('Name is required.', 'error')
+            return render_template('member/edit_profile.html', member=member)
+
+        if not email:
+            flash('Email is required.', 'error')
+            return render_template('member/edit_profile.html', member=member)
+
+        # Check if email is taken by another member
+        existing = Member.query.filter(Member.email == email, Member.id != member.id).first()
+        if existing:
+            flash('That email is already in use by another member.', 'error')
+            return render_template('member/edit_profile.html', member=member)
+
+        # Validate website URL if provided
+        if website and not (website.startswith('http://') or website.startswith('https://')):
+            website = 'https://' + website
+
+        # Note: Profile picture is handled via AJAX upload (/api/profile-picture/upload)
+        # and saved immediately, so we don't need to process it here on form submit.
+
+        # Update member
+        member.name = name
+        member.email = email
+        member.phone = phone
+        member.business = business
+        member.website = website
+        member.bio = bio[:500] if bio else None  # Limit bio to 500 chars
+        member.profile_public = profile_public
+
+        # Update session name if it changed
+        session['member_name'] = member.name
+
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('member.view_profile', member_id=member.id))
+
+    return render_template('member/edit_profile.html', member=member)
+
+
+# ============== RATING ==============
+
+@member_bp.route('/rate/<int:lunch_id>', methods=['GET', 'POST'])
+@member_required
+def rate_lunch(lunch_id):
+    """Rate a lunch you attended."""
+    member = get_current_member()
+    if not member:
+        return redirect(url_for('member.login'))
+
+    lunch = Lunch.query.get_or_404(lunch_id)
+
+    # Verify member attended this lunch
+    attendance = Attendance.query.filter_by(
+        lunch_id=lunch_id,
+        member_id=member.id
+    ).first()
+
+    if not attendance:
+        flash("You can only rate lunches you attended.", 'error')
+        return redirect(url_for('member.dashboard'))
+
+    # Check for existing rating
+    existing_rating = Rating.query.filter_by(
+        lunch_id=lunch_id,
+        member_id=member.id
+    ).first()
+
+    if request.method == 'POST':
+        rating_value = request.form.get('rating', type=int)
+        comment = request.form.get('comment', '').strip() or None
+
+        if not rating_value or rating_value < 1 or rating_value > 5:
+            flash('Please select a rating between 1 and 5 stars.', 'error')
+            return render_template('member/rate_lunch.html',
+                                   member=member,
+                                   lunch=lunch,
+                                   existing_rating=existing_rating)
+
+        if existing_rating:
+            existing_rating.rating = rating_value
+            existing_rating.comment = comment
+        else:
+            new_rating = Rating(
+                lunch_id=lunch_id,
+                member_id=member.id,
+                rating=rating_value,
+                comment=comment
+            )
+            db.session.add(new_rating)
+
+        # Update location average rating
+        if lunch.location:
+            location = lunch.location
+            all_ratings = Rating.query.join(Lunch).filter(
+                Lunch.location_id == location.id,
+                Rating.rating.isnot(None)
+            ).all()
+            if all_ratings:
+                avg = sum(r.rating for r in all_ratings) / len(all_ratings)
+                location.avg_group_rating = round(avg, 2)
+
+        db.session.commit()
+        flash('Thanks for your rating!', 'success')
+        return redirect(url_for('member.dashboard'))
+
+    return render_template('member/rate_lunch.html',
+                           member=member,
+                           lunch=lunch,
+                           existing_rating=existing_rating)

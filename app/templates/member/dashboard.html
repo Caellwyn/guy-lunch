@@ -82,11 +82,24 @@
                         </div>
                     </div>
 
-                    <!-- Gallery Link -->
-                    <div class="w-full mt-6">
-                        <a href="{{ url_for('gallery.index') }}" class="block w-full bg-blue-900 text-white font-graduate text-xl py-3 rounded shadow-lg hover:bg-blue-800 transition-colors border-2 border-white uppercase tracking-wider">
+                    <!-- Quick Action Buttons -->
+                    <div class="w-full mt-6 space-y-3">
+                        <a href="{{ url_for('gallery.index') }}" class="block w-full bg-blue-900 text-white font-graduate text-xl py-3 rounded shadow-lg hover:bg-blue-800 transition-colors border-2 border-white uppercase tracking-wider text-center">
                             View Team Photos
                         </a>
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="{{ url_for('gallery.index') }}#upload" class="block bg-green-700 text-white font-condensed py-2 px-3 rounded shadow hover:bg-green-600 transition-colors border border-green-900 uppercase text-center text-sm">
+                                Post Photo
+                            </a>
+                            <a href="{{ url_for('member.my_profile') }}" class="block bg-gray-600 text-white font-condensed py-2 px-3 rounded shadow hover:bg-gray-500 transition-colors border border-gray-700 uppercase text-center text-sm">
+                                My Profile
+                            </a>
+                        </div>
+                        {% if ratable_lunch %}
+                        <a href="{{ url_for('member.rate_lunch', lunch_id=ratable_lunch.id) }}" class="block w-full bg-yellow-600 text-white font-condensed py-2 rounded shadow hover:bg-yellow-500 transition-colors border border-yellow-700 uppercase text-center">
+                            Rate Last Lunch
+                        </a>
+                        {% endif %}
                     </div>
 
                 </div>
@@ -111,9 +124,9 @@
                         <div class="led-light active-red"></div>
                         <div class="flex-1">
                             <div class="font-condensed text-gray-500 text-xs uppercase">At Bat (Hosting This Week)</div>
-                            <div class="font-scoreboard text-2xl text-white tracking-wide">
+                            <a href="{{ url_for('member.view_profile', member_id=lineup.at_bat.id) }}" class="font-scoreboard text-2xl text-white tracking-wide hover:text-yellow-300 transition-colors">
                                 {{ lineup.at_bat.name.upper() }}
-                            </div>
+                            </a>
                             {% if upcoming_lunch and upcoming_lunch.location %}
                             <div class="font-scoreboard text-sm text-yellow-500">
                                 @ {{ upcoming_lunch.location.name.upper() }}
@@ -128,9 +141,9 @@
                         <div class="led-light active-yellow"></div>
                         <div class="flex-1">
                             <div class="font-condensed text-gray-500 text-xs uppercase">On Deck (Next Week)</div>
-                            <div class="font-scoreboard text-xl text-gray-300 tracking-wide">
+                            <a href="{{ url_for('member.view_profile', member_id=lineup.on_deck.id) }}" class="font-scoreboard text-xl text-gray-300 tracking-wide hover:text-yellow-300 transition-colors">
                                 {{ lineup.on_deck.name.upper() }}
-                            </div>
+                            </a>
                         </div>
                         <div class="font-jersey text-3xl text-gray-700 opacity-50">2</div>
                     </div>
@@ -140,9 +153,9 @@
                         <div class="led-light active-green"></div>
                         <div class="flex-1">
                             <div class="font-condensed text-gray-500 text-xs uppercase">In The Hole (2 Weeks Out)</div>
-                            <div class="font-scoreboard text-xl text-gray-300 tracking-wide">
+                            <a href="{{ url_for('member.view_profile', member_id=lineup.in_hole.id) }}" class="font-scoreboard text-xl text-gray-300 tracking-wide hover:text-yellow-300 transition-colors">
                                 {{ lineup.in_hole.name.upper() }}
-                            </div>
+                            </a>
                         </div>
                         <div class="font-jersey text-3xl text-gray-700 opacity-50">3</div>
                     </div>

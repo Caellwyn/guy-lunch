@@ -19,6 +19,7 @@
 | Railway Web Service | Flask app hosting | ✅ Deployed |
 | Brevo | Transactional email (templates + API) | ✅ Configured |
 | Google Places API | Location search/details | ✅ Integrated |
+| Cloudflare R2 | Photo storage (S3-compatible) | ✅ Configured |
 
 ---
 
@@ -48,6 +49,7 @@ guy-lunch/
 │   │   ├── __init__.py
 │   │   ├── main.py         # Main routes (/, /health, /confirm)
 │   │   ├── admin.py        # Admin/secretary routes
+│   │   ├── gallery.py      # Photo gallery routes
 │   │   └── api.py          # JSON API endpoints
 │   ├── services/           # Business logic (empty, ready for use)
 │   ├── templates/          # Jinja2 templates
@@ -97,6 +99,7 @@ guy-lunch/
 | admin | `admin.py` | Secretary dashboard, attendance tracking, setup/import |
 | api | `api.py` | JSON endpoints for Places search, etc. |
 | member | `member.py` | Member portal: auth, dashboard, lineup, history |
+| gallery | `gallery.py` | Photo gallery: upload, view, tagging, filtering |
 
 **Public Routes (Implemented):**
 - `/` - Home page
@@ -116,7 +119,14 @@ guy-lunch/
 - `/member/` - Member dashboard with baseball-themed hosting lineup
 - `/member/lineup` - Full batting order with estimated hosting dates
 - `/member/history` - Member's lunch attendance history
-- `/member/gallery` - Photo gallery (placeholder for Phase 4.3)
+
+**Gallery Routes (Implemented):**
+- `/member/gallery` - Photo gallery with filtering by location/tagged member
+- `/member/gallery/upload` (POST) - Upload photos for a lunch
+- `/member/gallery/photo/<id>/delete` (POST) - Delete own photos
+- `/member/gallery/lunch/<id>/attendees` - Get attendees for tagging (AJAX)
+- `/member/gallery/photo/<id>/details` - Get photo details including tags (AJAX)
+- `/member/gallery/photo/<id>/tag` (POST) - Add/remove member tags on photos (AJAX)
 
 **Admin Routes (Implemented):**
 - `/admin/login` - Password authentication
@@ -145,7 +155,7 @@ guy-lunch/
 | scheduler | `scheduler.py` | APScheduler jobs for automated emails |
 | places | `places_service.py` | Google Places API integration |
 | hosting | `hosting_service.py` | Host rotation logic, queue management |
-| photos | `photo_service.py` | Upload, compression, thumbnail generation |
+| storage | `storage_service.py` | Cloudflare R2 photo storage (S3-compatible) |
 
 ### Templates
 **Location:** `app/templates/`
@@ -182,12 +192,12 @@ templates/
 │   ├── already_confirmed.html
 │   ├── invalid_token.html
 │   └── rating_thanks.html      # Rating submission thank-you
-└── member/
+├── member/
     ├── login.html         # Magic link login form
     ├── dashboard.html     # Member dashboard with baseball lineup
     ├── lineup.html        # Full batting order
     ├── history.html       # Attendance history
-    └── gallery.html       # Photo gallery (placeholder)
+    └── gallery.html       # Photo gallery with upload, tagging, filtering
 ```
 
 ---
@@ -223,6 +233,11 @@ templates/
 | `GOOGLE_PLACES_API_KEY` | Location search | Google Cloud Console |
 | `ADMIN_PASSWORD_HASH` | Admin login | Generate with bcrypt |
 | `APP_URL` | Base URL for email links | Railway URL |
+| `R2_ACCOUNT_ID` | Cloudflare account ID | Cloudflare dashboard |
+| `R2_ACCESS_KEY_ID` | R2 access key | Cloudflare R2 API tokens |
+| `R2_SECRET_ACCESS_KEY` | R2 secret key | Cloudflare R2 API tokens |
+| `R2_BUCKET_NAME` | R2 bucket name | Cloudflare R2 dashboard |
+| `R2_PUBLIC_URL` | Public URL for R2 bucket | Cloudflare R2 settings |
 
 ---
 
@@ -321,10 +336,58 @@ templates/
   - [x] **Lineup:** "Clipboard" style list with wood header
   - [x] **Stats:** "Box Score" paper style with grid layout
 
-### Next Up - Phase 4.3: Photo Gallery
-- [ ] Photo upload functionality
-- [ ] Gallery view
-- [ ] Mobile optimization for photos
+### Completed - Phase 4.3: Photo Gallery ✅ COMPLETE
+- [x] **Photo Upload (Mobile-First)**
+  - [x] Upload photos with lunch selection
+  - [x] Tag members who attended (only attendees can be tagged)
+  - [x] Photos stored in Cloudflare R2 (S3-compatible)
+  - [x] Mobile camera/gallery access via file input
+- [x] **Photo Gallery**
+  - [x] Grid layout with thumbnails (responsive)
+  - [x] Lightbox view for full-size photos
+  - [x] Filter by location (stadium)
+  - [x] Filter by tagged member
+  - [x] Local timezone display for upload times
+  - [x] Scroll position preservation on filter changes
+- [x] **Member Tagging**
+  - [x] Tag members during upload
+  - [x] Tag/untag members in lightbox view
+  - [x] Only lunch attendees can be tagged
+  - [x] View tags on photos in lightbox
+- [x] **Photo Management**
+  - [x] Delete own photos
+  - [x] View photo metadata (uploader, date, location)
+
+### Completed - Phase 4.5: Final Features (December 2024)
+
+**4.5.0: Magic Link Session Bug Fix**
+- [x] Fix 30-day session persistence - added `PERMANENT_SESSION_LIFETIME` config
+
+**4.5.1: Dashboard Quick Actions**
+- [x] "Post Image" shortcut button (link to gallery upload)
+- [x] "Rate Last Lunch" button (only for attended, unrated lunches)
+- [x] Restrict photo uploads to attended lunches only
+
+**4.5.2: Rating Comments Enhancement**
+- [x] Member rating page with comment field (`/member/rate/<lunch_id>`)
+- [x] Show member comments on location detail view (host confirmation modal)
+
+**4.5.3: Host Swap Functionality**
+- [x] Swap interface in admin (`/admin/hosting-queue/swap`)
+- [x] Exchange `attendance_since_hosting` values between two members
+- [x] Mobile-friendly two-step selection
+
+**4.5.4: Member Profile System**
+- [x] Profile fields added to Member model (phone, business, website, bio, profile_picture_url, profile_public)
+- [x] Profile edit page (`/member/profile/edit`)
+- [x] Public profile view (`/member/profile/<id>`) - any member can view, privacy controls contact info
+- [x] Admin profile editing (integrated into member edit page)
+- [x] Show member's uploaded photos and tagged photos on profile
+- [x] Member names link to profiles throughout app (dashboard, lineup)
+
+### Next Up - Phase 4.6 (Optional)
+- [ ] PWA Features (service worker, manifest, offline capability)
+- [ ] Railway cron service setup for automated emails
 
 ---
 
@@ -346,4 +409,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 7, 2025 - Phase 4 Started (Member Portal with Baseball Lineup)*
+*Last Updated: January 2025 - Phase 4.3 Complete (Photo Gallery with Tagging & R2 Storage)*
