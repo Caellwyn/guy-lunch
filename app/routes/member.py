@@ -69,7 +69,11 @@ def set_member_session(member):
 
 @member_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Member login page - request magic link."""
+    """Member login page - request magic link.
+    
+    GET requests redirect to the styled home page (/).
+    POST requests process the login form and redirect back to home page with flash messages.
+    """
     if session.get('member_id'):
         return redirect(url_for('member.dashboard'))
 
@@ -78,7 +82,7 @@ def login():
 
         if not email:
             flash('Please enter your email address.', 'error')
-            return render_template('member/login.html')
+            return redirect(url_for('main.index'))
 
         # Find member by email
         member = Member.query.filter_by(email=email).first()
@@ -86,11 +90,11 @@ def login():
         if not member:
             # Don't reveal if email exists or not (security)
             flash('If that email is registered, you will receive a login link shortly.', 'success')
-            return render_template('member/login.html')
+            return redirect(url_for('main.index'))
 
         if member.member_type == 'inactive':
             flash('If that email is registered, you will receive a login link shortly.', 'success')
-            return render_template('member/login.html')
+            return redirect(url_for('main.index'))
 
         # Generate magic link token and store on member
         token = secrets.token_urlsafe(32)
@@ -123,9 +127,10 @@ def login():
             flash('If that email is registered, you will receive a login link shortly.', 'success')
             current_app.logger.error(f"Failed to send magic link to {email}: {result.get('error')}")
 
-        return render_template('member/login.html')
+        return redirect(url_for('main.index'))
 
-    return render_template('member/login.html')
+    # GET requests: redirect to the styled home page
+    return redirect(url_for('main.index'))
 
 
 @member_bp.route('/auth/<token>')

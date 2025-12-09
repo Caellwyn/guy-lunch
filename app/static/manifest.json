@@ -1,8 +1,8 @@
 {
-  "name": "Tuesday Lunch Club",
-  "short_name": "TL Club",
-  "description": "Longview Business Networking Lunch Group",
-  "start_url": "/member/",
+  "name": "Tuesday Lunch Group",
+  "short_name": "TL Group",
+  "description": "Longview/Kelso Lunch Group",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1e3a8a",

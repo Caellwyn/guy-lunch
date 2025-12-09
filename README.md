@@ -16,18 +16,19 @@ This app automates the entire weekly workflow for a recurring Tuesday lunch grou
 - 📧 Scheduled email workflows (host confirmation, announcements, rating requests)
 - 📊 Attendance tracking with automatic counter management
 - 📍 Location management with Google Places integration
-- ⭐ Restaurant rating system
-- 📸 Photo gallery for lunch memories
-- 📱 Mobile-first, PWA-ready design
+- ⭐ Restaurant rating system with comments
+- 👤 Member profiles with business info
+- 📱 Progressive Web App (PWA) - installable on iOS/Android with custom splash screens
+- ⚾ Baseball-themed "batting order" hosting queue display
 
 ## Tech Stack
 
 - **Backend:** Python Flask
-- **Database:** PostgreSQL
-- **Frontend:** Flask templates + Tailwind CSS
-- **Email:** Brevo
+- **Database:** PostgreSQL (Railway)
+- **Frontend:** Flask templates + Tailwind CSS + Stadium Theme
+- **Email:** Brevo (transactional emails)
 - **Maps:** Google Places API
-- **Hosting:** Railway
+- **Hosting:** Railway (auto-deploy from GitHub)
 
 ## Getting Started
 
@@ -124,12 +125,26 @@ guy-lunch/
 
 ## Development Phases
 
-1. **Phase 0:** Setup & Infrastructure
-2. **Phase 1:** MVP - Core Functionality (attendance, hosting queue, email templates)
-3. **Phase 2:** Automation & Email (scheduled jobs, host confirmation flow)
-4. **Phase 3:** Location Management & Ratings (Google Places, rating system)
-5. **Phase 4:** Analytics, Auth & Photo Gallery
-6. **Phase 5:** Production & Handoff
+1. ✅ **Phase 0:** Setup & Infrastructure
+2. ✅ **Phase 1:** MVP - Core Functionality (attendance, hosting queue, email templates)
+3. ✅ **Phase 2:** Email Automation (Brevo integration, host confirmation flow)
+4. ✅ **Phase 3:** Location Management & Ratings (Google Places, one-click ratings)
+5. ✅ **Phase 4:** Member Portal & Authentication (magic link login, member dashboard)
+6. ✅ **Phase 4.5-4.8:** Polish (profiles, secretary portal, PWA enhancements)
+
+## Installing as a PWA
+
+### On iPhone/iPad:
+1. Open the app in Safari
+2. Tap the Share button (square with arrow)
+3. Scroll down and tap "Add to Home Screen"
+4. Tap "Add" - the app icon will appear on your home screen
+
+### On Android:
+1. Open the app in Chrome
+2. Tap the three-dot menu
+3. Tap "Add to Home Screen" or "Install app"
+4. The app will install with full splash screen support
 
 ## License
 
@@ -137,4 +152,4 @@ Private project - All rights reserved
 
 ## Author
 
-Josh Caellwyn (The AI Guy)
+Josh Caellwyn (The AI Guy) - [theaiguy.rocks](https://theaiguy.rocks)

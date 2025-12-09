@@ -444,6 +444,23 @@ Photo sharing functionality disabled per member feedback. Code preserved but blu
   - `app/static/manifest.json` - PWA manifest
   - `app/static/favicon.ico` - Browser tab icon
 
+### Completed - Phase 4.8: PWA Polish & UX Improvements (December 2025)
+- [x] **Unified Login Experience**
+  - Styled login page (`index.html`) now used everywhere
+  - Archived generic `member/login.html` template
+  - `/member/login` redirects to `/` for consistent branding
+  - PWA `start_url` changed from `/member/` to `/`
+  - Removed decorative feature icons from login page
+- [x] **iOS Splash Screens**
+  - Created 20 custom splash screen images (13 iPhone + 7 iPad sizes)
+  - Full device coverage from iPhone SE to iPhone 17 Pro Max
+  - iPad support from iPad mini to iPad Pro 12.9"
+  - Added all `apple-touch-startup-image` meta tags to `base.html`
+- [x] **Updated App Icons**
+  - All icon sizes now use branded stadium splash image
+  - Consistent branding across iOS, Android, and browser
+  - Android splash now matches iOS (same background image)
+
 ### Deferred (Not Planned)
 - Push notifications (requires service worker, server-side subscription management)
 - Offline capability (requires service worker, caching strategy)
@@ -469,4 +486,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 2024 - Phase 4.7 Complete (PWA Features)*
+*Last Updated: December 2025 - Phase 4.8 Complete (PWA Polish & UX Improvements)*
