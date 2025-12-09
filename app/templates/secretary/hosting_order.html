@@ -19,7 +19,7 @@
     <!-- Instructions -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p class="text-blue-800 text-sm">
-            <strong>Tip:</strong> Drag members up or down to change who hosts next.
+            <strong>Tip:</strong> Use the ☰ handle on the left to drag members up or down.
             The person at the top will host this week, second will host next week, etc.
         </p>
     </div>
@@ -33,14 +33,16 @@
     </div>
 
     <!-- Sortable List -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <ul id="hosting-list" class="divide-y divide-gray-100">
-            {% for member in members %}
-                <li class="hosting-item flex items-center px-4 py-4 hover:bg-gray-50 cursor-grab active:cursor-grabbing"
-                    data-id="{{ member.id }}">
+    <!-- Note: px-6 on outer div creates scroll zones on mobile edges -->
+    <div class="px-6 -mx-6 sm:px-0 sm:mx-0">
+        <div class="bg-white rounded-lg shadow overflow-hidden mx-6 sm:mx-0">
+            <ul id="hosting-list" class="divide-y divide-gray-100">
+                {% for member in members %}
+                    <li class="hosting-item flex items-center px-4 py-4 hover:bg-gray-50"
+                        data-id="{{ member.id }}">
 
-                    <!-- Drag Handle -->
-                    <div class="flex-shrink-0 mr-4 text-gray-400">
+                    <!-- Drag Handle - touch-friendly size -->
+                    <div class="drag-handle flex-shrink-0 mr-3 p-2 -ml-2 text-gray-400 cursor-grab active:cursor-grabbing touch-manipulation">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
                         </svg>
@@ -77,10 +79,11 @@
                                 <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">IN HOLE</span>
                             {% endif %}
                         </div>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 
     <!-- Save Status -->
@@ -110,7 +113,7 @@ const sortable = Sortable.create(hostingList, {
     ghostClass: 'bg-blue-100',
     chosenClass: 'bg-blue-50',
     dragClass: 'shadow-lg',
-    handle: '.hosting-item',
+    handle: '.drag-handle',  // Only drag via the handle, not the whole row
     onEnd: function(evt) {
         saveOrder();
         updatePositionNumbers();
