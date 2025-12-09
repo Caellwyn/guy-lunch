@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ params.TIER_LABEL }} - Tuesday Lunch</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+        }
+        @media screen and (max-width: 600px) {
+            .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+            .mobile-full-width { width: 100% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6;">
+        <tr>
+            <td align="center" style="padding: 24px 0;">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="mobile-full-width" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <!-- Header - Color varies by tier -->
+                    <tr>
+                        {% if params.TIER_LABEL == "You're AT BAT!" %}
+                        <td style="background-color: #dc2626; padding: 24px; text-align: center;">
+                        {% elif params.TIER_LABEL == "You're ON DECK!" %}
+                        <td style="background-color: #eab308; padding: 24px; text-align: center;">
+                        {% else %}
+                        <td style="background-color: #16a34a; padding: 24px; text-align: center;">
+                        {% endif %}
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                                {{ params.TIER_LABEL }}
+                            </h1>
+                            <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">
+                                {{ params.TIME_FRAME }} - {{ params.LUNCH_DATE }}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td class="mobile-padding" style="padding: 32px 24px;">
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                Hi <strong>{{ params.HOST_NAME }}</strong>,
+                            </p>
+
+                            <p style="margin: 0 0 24px 0; color: #374151; font-size: 16px; line-height: 1.6;">
+                                {{ params.STATUS_MESSAGE }}
+                            </p>
+
+                            <!-- Current Status Box -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb; border-radius: 8px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Your Current Status
+                                        </p>
+                                        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    {% if params.IS_CONFIRMED == 'yes' %}
+                                                    <span style="color: #16a34a; font-size: 16px;">&#10003;</span>
+                                                    <span style="color: #374151; font-size: 15px; margin-left: 8px;">Confirmed to host</span>
+                                                    {% else %}
+                                                    <span style="color: #dc2626; font-size: 16px;">&#10007;</span>
+                                                    <span style="color: #374151; font-size: 15px; margin-left: 8px;">Not yet confirmed</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0;">
+                                                    {% if params.HAS_LOCATION == 'yes' %}
+                                                    <span style="color: #16a34a; font-size: 16px;">&#10003;</span>
+                                                    <span style="color: #374151; font-size: 15px; margin-left: 8px;">Location: <strong>{{ params.LOCATION_NAME }}</strong></span>
+                                                    {% else %}
+                                                    <span style="color: #dc2626; font-size: 16px;">&#10007;</span>
+                                                    <span style="color: #374151; font-size: 15px; margin-left: 8px;">Location: Not yet selected</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Action Box -->
+                            {% if params.IS_CONFIRMED != 'yes' or params.HAS_LOCATION != 'yes' %}
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fef2f2; border-radius: 8px; margin-bottom: 24px; border: 1px solid #fecaca;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <p style="margin: 0 0 16px 0; color: #991b1b; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Action Required
+                                        </p>
+                                        <p style="margin: 0 0 16px 0; color: #7f1d1d; font-size: 16px;">
+                                            {% if params.IS_CONFIRMED != 'yes' and params.HAS_LOCATION != 'yes' %}
+                                            Please confirm you'll be hosting and select a restaurant.
+                                            {% elif params.IS_CONFIRMED != 'yes' %}
+                                            Please confirm you'll be hosting.
+                                            {% else %}
+                                            Please select a restaurant for the group.
+                                            {% endif %}
+                                        </p>
+                                        <!-- CTA Button -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="background-color: #dc2626; border-radius: 6px;">
+                                                    <a href="{{ params.CONFIRM_URL }}"
+                                                       style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                                                        Confirm &amp; Choose Restaurant
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% else %}
+                            <!-- All Good Box -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f0fdf4; border-radius: 8px; margin-bottom: 24px; border: 1px solid #bbf7d0;">
+                                <tr>
+                                    <td style="padding: 24px;">
+                                        <p style="margin: 0 0 16px 0; color: #166534; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            You're All Set!
+                                        </p>
+                                        <p style="margin: 0 0 16px 0; color: #14532d; font-size: 16px;">
+                                            Everything is confirmed. Need to make changes?
+                                        </p>
+                                        <!-- CTA Button -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="background-color: #16a34a; border-radius: 6px;">
+                                                    <a href="{{ params.CONFIRM_URL }}"
+                                                       style="display: inline-block; padding: 14px 28px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                                                        View or Change Details
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endif %}
+
+                            <p style="margin: 24px 0 0 0; color: #374151; font-size: 16px;">
+                                Thanks,<br>
+                                <strong>Tuesday Lunch Scheduler</strong>
+                            </p>
+
+                            <!-- Link fallback -->
+                            <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 12px;">
+                                If the button doesn't work, copy and paste this link:<br>
+                                <a href="{{ params.CONFIRM_URL }}" style="color: #2563eb;">{{ params.CONFIRM_URL }}</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #1f2937; padding: 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="text-align: center;">
+                                        <p style="margin: 0; color: #9ca3af; font-size: 14px;">
+                                            Tuesday Lunch Group - Longview, WA
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+<!--
+TEMPLATE VARIABLES (params object):
+- HOST_NAME: Name of the host
+- LUNCH_DATE: Formatted date string (e.g., "December 10, 2024")
+- CONFIRM_URL: Full URL for host to confirm/update
+- TIER_LABEL: "You're AT BAT!", "You're ON DECK!", or "You're IN THE HOLE!"
+- TIME_FRAME: "This Tuesday", "Next Tuesday", or "In 3 Weeks"
+- STATUS_MESSAGE: Context-appropriate message
+- IS_CONFIRMED: 'yes' or 'no'
+- HAS_LOCATION: 'yes' or 'no'
+- LOCATION_NAME: Name of selected location or 'Not yet selected'
+-->

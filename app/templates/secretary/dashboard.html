@@ -103,13 +103,100 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a href="{{ url_for('secretary.attendance') }}"
            class="block bg-blue-600 text-white text-center text-xl font-bold py-5 rounded-xl shadow-lg hover:bg-blue-700 transition-colors">
-            📋 Take Attendance
+            Take Attendance
         </a>
         <a href="{{ url_for('secretary.hosting_order') }}"
            class="block bg-purple-600 text-white text-center text-xl font-bold py-5 rounded-xl shadow-lg hover:bg-purple-700 transition-colors">
-            🔄 Hosting Order
+            Hosting Order
         </a>
     </div>
+
+    <!-- 3-Host Status Tracker -->
+    {% if host_statuses %}
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gray-800 text-white px-6 py-3">
+            <h2 class="text-lg font-bold">Upcoming Hosts Status</h2>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+            {% for status in host_statuses %}
+                <div class="p-4 {% if status.tier == 'at_bat' and (not status.host_confirmed or not status.location_selected) %}bg-red-50{% elif status.tier == 'at_bat' %}bg-green-50{% endif %}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <!-- Tier Badge -->
+                            {% if status.tier == 'at_bat' %}
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white font-bold text-sm">1</span>
+                            {% elif status.tier == 'on_deck' %}
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-yellow-400 text-gray-900 font-bold text-sm">2</span>
+                            {% else %}
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white font-bold text-sm">3</span>
+                            {% endif %}
+
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-900">{{ status.host.name if status.host else 'Unknown' }}</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full
+                                        {% if status.tier == 'at_bat' %}bg-red-100 text-red-800
+                                        {% elif status.tier == 'on_deck' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-green-100 text-green-800{% endif %}">
+                                        {{ status.tier_label }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-500">{{ status.lunch_date.strftime('%b %d') }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Status Indicators -->
+                        <div class="flex items-center gap-4 text-sm">
+                            <!-- Confirmed Status -->
+                            <div class="flex items-center gap-1">
+                                {% if status.host_confirmed %}
+                                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-green-700">Confirmed</span>
+                                {% else %}
+                                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-red-700">Not Confirmed</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Location Status -->
+                            <div class="flex items-center gap-1">
+                                {% if status.location_selected %}
+                                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-green-700 max-w-[120px] truncate" title="{{ status.location.name }}">{{ status.location.name }}</span>
+                                {% else %}
+                                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <span class="text-red-700">No Location</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning for At Bat not ready -->
+                    {% if status.tier == 'at_bat' and (not status.host_confirmed or not status.location_selected) %}
+                        <div class="mt-3 p-3 bg-red-100 border border-red-300 rounded-lg">
+                            <p class="text-sm text-red-800 font-medium">
+                                Action needed! Contact {{ status.host.name if status.host else 'the host' }}
+                                {% if status.host and status.host.email %}
+                                    (<a href="mailto:{{ status.host.email }}" class="underline">{{ status.host.email }}</a>)
+                                {% endif %}
+                                or consider swapping hosts.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Last Week Summary -->
     {% if last_lunch %}

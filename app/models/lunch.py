@@ -13,6 +13,7 @@ class Lunch(db.Model):
     expected_attendance = db.Column(db.Integer, nullable=True)
     actual_attendance = db.Column(db.Integer, nullable=True)
     reservation_confirmed = db.Column(db.Boolean, default=False)
+    host_confirmed = db.Column(db.Boolean, default=False)  # Host confirmed they will host
     status = db.Column(db.String(20), default='planned')  # planned, completed, cancelled
     confirmation_token = db.Column(db.String(64), nullable=True, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

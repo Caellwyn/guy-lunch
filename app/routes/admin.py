@@ -82,7 +82,13 @@ def dashboard():
 @admin_bp.route('/attendance', methods=['GET', 'POST'])
 @admin_required
 def attendance():
-    """Attendance tracking page."""
+    """Attendance tracking page.
+
+    Handles re-saving attendance correctly by:
+    - Only incrementing counters for newly added attendees
+    - Decrementing counters for removed attendees
+    - Properly handling host changes
+    """
     # Get the lunch date from query param or default to this/next Tuesday
     lunch_date_str = request.args.get('date')
     if lunch_date_str:
@@ -94,68 +100,103 @@ def attendance():
             lunch_date = today
         else:
             lunch_date = today + timedelta(days=days_until_tuesday)
-    
+
     # Get or create lunch record
     lunch = Lunch.query.filter_by(date=lunch_date).first()
     if not lunch:
         lunch = Lunch(date=lunch_date, status='planned')
         db.session.add(lunch)
         db.session.commit()
-    
+
     if request.method == 'POST':
-        # Get list of member IDs who attended
-        attendee_ids = request.form.getlist('attendees')
-        host_id = request.form.get('host_id')
-        
-        # Clear existing attendance for this lunch
-        Attendance.query.filter_by(lunch_id=lunch.id).delete()
-        
-        # Record attendance
-        for member_id in attendee_ids:
-            member = Member.query.get(int(member_id))
+        # Get list of member IDs who attended (as integers)
+        new_attendee_ids = set(int(mid) for mid in request.form.getlist('attendees'))
+        new_host_id = int(request.form.get('host_id')) if request.form.get('host_id') else None
+
+        # Get existing attendance records BEFORE clearing
+        existing_records = {a.member_id: a for a in Attendance.query.filter_by(lunch_id=lunch.id).all()}
+        existing_attendee_ids = set(existing_records.keys())
+
+        # Calculate who was added and who was removed
+        added_ids = new_attendee_ids - existing_attendee_ids
+        removed_ids = existing_attendee_ids - new_attendee_ids
+        kept_ids = new_attendee_ids & existing_attendee_ids
+
+        # Handle removed members - decrement their counters
+        for member_id in removed_ids:
+            member = db.session.get(Member, member_id)
             if member:
-                was_host = (str(member_id) == str(host_id))
+                was_host = existing_records[member_id].was_host
+                if was_host:
+                    member.total_hosting_count = max(0, (member.total_hosting_count or 1) - 1)
+                else:
+                    member.attendance_since_hosting = max(0, (member.attendance_since_hosting or 1) - 1)
+
+        # Clear existing attendance records
+        Attendance.query.filter_by(lunch_id=lunch.id).delete()
+
+        # Record new attendance
+        for member_id in new_attendee_ids:
+            member = db.session.get(Member, member_id)
+            if member:
+                was_host = (member_id == new_host_id)
                 attendance_record = Attendance(
                     lunch_id=lunch.id,
                     member_id=member.id,
                     was_host=was_host
                 )
                 db.session.add(attendance_record)
-                
-                # Update member's attendance counter
-                if was_host:
-                    member.attendance_since_hosting = 0
-                    member.last_hosted_date = lunch_date
-                    member.total_hosting_count = (member.total_hosting_count or 0) + 1
-                else:
-                    member.attendance_since_hosting = (member.attendance_since_hosting or 0) + 1
-        
+
+                # Only update counters for NEWLY ADDED members
+                if member_id in added_ids:
+                    if was_host:
+                        member.attendance_since_hosting = 0
+                        member.last_hosted_date = lunch_date
+                        member.total_hosting_count = (member.total_hosting_count or 0) + 1
+                    else:
+                        member.attendance_since_hosting = (member.attendance_since_hosting or 0) + 1
+                # For kept members, handle host status changes
+                elif member_id in kept_ids:
+                    was_previously_host = existing_records[member_id].was_host
+                    if was_host and not was_previously_host:
+                        member.attendance_since_hosting = 0
+                        member.last_hosted_date = lunch_date
+                        member.total_hosting_count = (member.total_hosting_count or 0) + 1
+                    elif not was_host and was_previously_host:
+                        member.total_hosting_count = max(0, (member.total_hosting_count or 1) - 1)
+                        member.attendance_since_hosting = (member.attendance_since_hosting or 0) + 1
+
         # Update lunch record
-        lunch.actual_attendance = len(attendee_ids)
-        lunch.host_id = int(host_id) if host_id else None
+        lunch.actual_attendance = len(new_attendee_ids)
+        lunch.host_id = new_host_id
         lunch.status = 'completed'
-        
+
         db.session.commit()
-        flash(f'Attendance saved: {len(attendee_ids)} attendees', 'success')
+        flash(f'Attendance saved: {len(new_attendee_ids)} attendees', 'success')
         return redirect(url_for('admin.dashboard'))
-    
+
     # Get all active members for the checklist
     members = Member.query.filter(
         Member.member_type.in_(['regular', 'guest'])
     ).order_by(Member.name).all()
-    
+
     # Get already recorded attendance
     existing_attendance = {a.member_id: a for a in lunch.attendances.all()}
-    
+
     # Get next host suggestion (uses queue_position override if set)
     queue = get_hosting_queue(limit=1)
     next_host = queue[0] if queue else None
-    
+
+    # Get location info
+    location = Location.query.get(lunch.location_id) if lunch.location_id else None
+
     return render_template('admin/attendance.html',
                            lunch=lunch,
+                           lunch_date=lunch_date,
                            members=members,
                            existing_attendance=existing_attendance,
-                           next_host=next_host)
+                           current_host=next_host,
+                           location=location)
 
 
 @admin_bp.route('/members')
@@ -315,27 +356,80 @@ def swap_hosts():
     return render_template('admin/swap_hosts.html', members=members)
 
 
+@admin_bp.route('/hosting-queue/reorder', methods=['POST'])
+@admin_required
+def reorder_hosting():
+    """Save new hosting order from drag-and-drop.
+
+    Sets queue_position for manual ordering.
+    Does NOT modify attendance_since_hosting (that's the actual count).
+    """
+    data = request.get_json()
+    if not data or 'order' not in data:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    member_ids = data['order']  # List of member IDs in new order
+
+    # Set queue_position for each member (1 = hosts next, 2 = on deck, etc.)
+    for index, member_id in enumerate(member_ids):
+        member = db.session.get(Member, int(member_id))
+        if member and member.member_type == 'regular':
+            member.queue_position = index + 1  # 1-indexed
+
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Hosting order updated'})
+
+
+@admin_bp.route('/hosting-queue/auto-organize', methods=['POST'])
+@admin_required
+def auto_organize_hosting():
+    """Reset hosting order to natural order based on attendance_since_hosting.
+
+    Simply clears all queue_position values, letting the natural order
+    (based on attendance_since_hosting) take over.
+    """
+    # Clear all queue_position overrides - order reverts to attendance_since_hosting
+    members = Member.query.filter_by(member_type='regular').all()
+    for member in members:
+        member.queue_position = None
+
+    db.session.commit()
+
+    return jsonify({'success': True, 'message': 'Hosting order reset to default (by attendance count)'})
+
+
 @admin_bp.route('/add-guest', methods=['POST'])
 @admin_required
 def add_guest():
     """Quick add a guest during attendance tracking."""
+    import uuid
+
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
-    lunch_date = request.form.get('lunch_date')
-    
+
     if not name:
         return jsonify({'error': 'Name is required'}), 400
-    
+
+    # Email is required by database constraint - generate placeholder if not provided
+    if not email:
+        email = f"guest-{uuid.uuid4().hex[:8]}@placeholder.local"
+
+    # Check if email already exists
+    existing = Member.query.filter_by(email=email).first()
+    if existing:
+        return jsonify({'error': 'A member with this email already exists'}), 400
+
     member = Member(
         name=name,
-        email=email or None,
+        email=email,
         member_type='guest',
         attendance_since_hosting=0,
         first_attended=date.today()
     )
     db.session.add(member)
     db.session.commit()
-    
+
     return jsonify({
         'id': member.id,
         'name': member.name,

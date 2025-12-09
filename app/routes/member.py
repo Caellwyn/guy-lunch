@@ -10,7 +10,11 @@ from datetime import date, datetime, timedelta
 import secrets
 
 from app import db
-from app.models import Member, Lunch, Attendance, Location, Rating, Setting
+from app.models import Member, Lunch, Attendance, Location, Rating, Setting, RateLimit
+
+# Rate limit settings for magic link emails
+MAGIC_LINK_MAX_REQUESTS = 2  # Maximum requests allowed
+MAGIC_LINK_WINDOW_MINUTES = 5  # Time window in minutes
 
 member_bp = Blueprint('member', __name__, url_prefix='/member')
 
@@ -70,9 +74,11 @@ def set_member_session(member):
 @member_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Member login page - request magic link.
-    
+
     GET requests redirect to the styled home page (/).
     POST requests process the login form and redirect back to home page with flash messages.
+
+    Rate limited to prevent abuse of email sending.
     """
     if session.get('member_id'):
         return redirect(url_for('member.dashboard'))
@@ -84,17 +90,38 @@ def login():
             flash('Please enter your email address.', 'error')
             return redirect(url_for('main.index'))
 
+        # Check rate limit BEFORE doing any email lookup (prevents enumeration)
+        is_allowed, remaining, retry_after = RateLimit.check_rate_limit(
+            key=email,
+            action='magic_link',
+            max_requests=MAGIC_LINK_MAX_REQUESTS,
+            window_minutes=MAGIC_LINK_WINDOW_MINUTES
+        )
+
+        if not is_allowed:
+            # Rate limited - show friendly message
+            retry_minutes = (retry_after // 60) + 1 if retry_after else MAGIC_LINK_WINDOW_MINUTES
+            flash(f'Too many login attempts. Please wait {retry_minutes} minute{"s" if retry_minutes != 1 else ""} before requesting another link.', 'error')
+            current_app.logger.warning(f"Rate limit exceeded for magic link: {email}")
+            return redirect(url_for('main.index'))
+
         # Find member by email
         member = Member.query.filter_by(email=email).first()
 
         if not member:
             # Don't reveal if email exists or not (security)
+            # Still record the attempt to rate limit enumeration attacks
+            RateLimit.record_request(key=email, action='magic_link')
             flash('If that email is registered, you will receive a login link shortly.', 'success')
             return redirect(url_for('main.index'))
 
         if member.member_type == 'inactive':
+            RateLimit.record_request(key=email, action='magic_link')
             flash('If that email is registered, you will receive a login link shortly.', 'success')
             return redirect(url_for('main.index'))
+
+        # Record this request for rate limiting
+        RateLimit.record_request(key=email, action='magic_link')
 
         # Generate magic link token and store on member
         token = secrets.token_urlsafe(32)

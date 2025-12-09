@@ -81,6 +81,7 @@ def submit_confirmation(token):
         # Update lunch record
         lunch.location_id = location.id
         lunch.reservation_confirmed = True
+        lunch.host_confirmed = True  # Host confirmed by selecting location
         db.session.commit()
 
         flash(f'Confirmed! You selected {location.name}.', 'success')
@@ -136,6 +137,7 @@ def submit_confirmation(token):
         # Update lunch record
         lunch.location_id = location.id
         lunch.reservation_confirmed = True
+        lunch.host_confirmed = True  # Host confirmed by selecting location
         db.session.commit()
 
         if existing_location:

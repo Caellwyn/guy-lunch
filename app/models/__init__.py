@@ -7,5 +7,6 @@ from app.models.rating import Rating
 from app.models.photo import Photo, PhotoTag
 from app.models.email_log import EmailLog
 from app.models.setting import Setting
+from app.models.rate_limit import RateLimit
 
-__all__ = ['Member', 'Location', 'Lunch', 'Attendance', 'Rating', 'Photo', 'PhotoTag', 'EmailLog', 'Setting']
+__all__ = ['Member', 'Location', 'Lunch', 'Attendance', 'Rating', 'Photo', 'PhotoTag', 'EmailLog', 'Setting', 'RateLimit']

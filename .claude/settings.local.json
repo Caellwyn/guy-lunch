@@ -5,7 +5,8 @@
       "Bash(python:*)",
       "Bash(source venv/Scripts/activate)",
       "Bash(flask --app run:app db migrate:*)",
-      "Bash(flask --app run:app db upgrade:*)"
+      "Bash(flask --app run:app db upgrade:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

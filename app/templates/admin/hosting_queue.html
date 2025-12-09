@@ -9,7 +9,7 @@
         <div>
             <a href="{{ url_for('admin.dashboard') }}" class="text-blue-600 hover:underline text-sm">← Dashboard</a>
             <h1 class="text-2xl font-bold text-gray-900 mt-1">🎯 Hosting Queue</h1>
-            <p class="text-gray-600">Members sorted by lunches attended since last hosting</p>
+            <p class="text-gray-600">Drag to reorder who hosts next</p>
         </div>
         <a href="{{ url_for('admin.swap_hosts') }}"
             class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
@@ -28,53 +28,250 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Queue -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="divide-y">
-            {% for member in members %}
-                <div class="flex items-center justify-between p-4 
-                    {% if loop.first %}bg-blue-50 border-l-4 border-blue-500{% endif %}
-                    {% if loop.index == 2 %}bg-yellow-50{% endif %}">
-                    <div class="flex items-center gap-4">
-                        <span class="text-2xl font-bold text-gray-300 w-8">{{ loop.index }}</span>
-                        <div>
-                            <span class="font-medium text-gray-900">
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p class="text-blue-800 text-sm">
+            <strong>Tip:</strong> Use the ☰ handle on the left to drag members up or down.
+            The person at the top will host this week, second will host next week, etc.
+        </p>
+    </div>
+
+    <!-- Auto-organize button -->
+    <div class="flex justify-end">
+        <button onclick="autoOrganize()"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            🔄 Auto-Organize (Reset to Default)
+        </button>
+    </div>
+
+    <!-- Sortable Queue -->
+    <div class="px-6 -mx-6 sm:px-0 sm:mx-0">
+        <div class="bg-white rounded-lg shadow overflow-hidden mx-6 sm:mx-0">
+            <ul id="hosting-list" class="divide-y divide-gray-100">
+                {% for member in members %}
+                    <li class="hosting-item flex items-center px-4 py-4 hover:bg-gray-50
+                        {% if loop.first %}bg-blue-50 border-l-4 border-blue-500{% endif %}
+                        {% if loop.index == 2 %}bg-yellow-50{% endif %}"
+                        data-id="{{ member.id }}">
+
+                        <!-- Drag Handle - touch-friendly size -->
+                        <div class="drag-handle flex-shrink-0 mr-3 p-2 -ml-2 text-gray-400 cursor-grab active:cursor-grabbing touch-manipulation">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+                            </svg>
+                        </div>
+
+                        <!-- Position Number -->
+                        <div class="position-number flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-4 font-bold text-lg
+                                    {% if loop.index == 1 %}bg-blue-500 text-white
+                                    {% elif loop.index == 2 %}bg-yellow-400 text-gray-900
+                                    {% elif loop.index == 3 %}bg-green-500 text-white
+                                    {% else %}bg-gray-200 text-gray-700{% endif %}">
+                            {{ loop.index }}
+                        </div>
+
+                        <!-- Member Info -->
+                        <div class="flex-1 min-w-0">
+                            <p class="member-name text-lg font-medium text-gray-900 truncate">
                                 {% if loop.first %}👑 {% endif %}
                                 {{ member.name }}
-                            </span>
-                            {% if loop.first %}
-                                <span class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">NEXT HOST</span>
-                            {% elif loop.index == 2 %}
-                                <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">BACKUP</span>
+                            </p>
+                            <p class="member-info text-sm text-gray-500">
+                                {{ member.attendance_since_hosting or 0 }} lunches since hosting
+                                {% if member.queue_position %}
+                                    <span class="text-blue-600">(manually set)</span>
+                                {% endif %}
+                            </p>
+                            {% if member.last_hosted_date %}
+                                <p class="text-xs text-gray-400">
+                                    Last hosted: {{ member.last_hosted_date.strftime('%b %d, %Y') }}
+                                </p>
                             {% endif %}
                         </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-semibold text-lg {% if loop.first %}text-blue-600{% else %}text-gray-700{% endif %}">
-                            {{ member.attendance_since_hosting }}
+
+                        <!-- Status Badge -->
+                        <div class="status-badge flex-shrink-0 ml-2">
+                            {% if loop.index == 1 %}
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">NEXT HOST</span>
+                            {% elif loop.index == 2 %}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">BACKUP</span>
+                            {% elif loop.index == 3 %}
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">IN HOLE</span>
+                            {% endif %}
                         </div>
-                        <div class="text-xs text-gray-500">lunches since hosting</div>
-                        {% if member.last_hosted_date %}
-                            <div class="text-xs text-gray-400">
-                                Last: {{ member.last_hosted_date.strftime('%b %d, %Y') }}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% else %}
-                <p class="p-6 text-gray-500 italic text-center">No regular members in queue</p>
-            {% endfor %}
+                    </li>
+                {% else %}
+                    <p class="p-6 text-gray-500 italic text-center">No regular members in queue</p>
+                {% endfor %}
+            </ul>
         </div>
     </div>
-    
+
+    <!-- Save Status -->
+    <div id="save-status" class="text-center text-sm text-gray-500 hidden">
+        Saving...
+    </div>
+
     <div class="text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
         <p><strong>How the queue works:</strong></p>
         <ul class="list-disc list-inside mt-2 space-y-1">
             <li>Members are ranked by how many lunches they've attended since last hosting</li>
             <li>The person who has attended the most lunches without hosting is next</li>
             <li>When someone hosts, their counter resets to 0</li>
-            <li>Ties are broken alphabetically by name</li>
+            <li>Drag and drop to manually override the order</li>
+            <li>Use "Auto-Organize" to reset to the natural order based on attendance counts</li>
         </ul>
     </div>
 </div>
+
+<!-- SortableJS Library -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+<script>
+// Initialize drag-and-drop
+const hostingList = document.getElementById('hosting-list');
+const saveStatus = document.getElementById('save-status');
+
+if (hostingList) {
+    const sortable = Sortable.create(hostingList, {
+        animation: 150,
+        ghostClass: 'bg-blue-100',
+        chosenClass: 'bg-blue-50',
+        dragClass: 'shadow-lg',
+        handle: '.drag-handle',
+        onEnd: function(evt) {
+            saveOrder();
+            updatePositionNumbers();
+        }
+    });
+}
+
+function updatePositionNumbers() {
+    const items = hostingList.querySelectorAll('.hosting-item');
+    items.forEach((item, index) => {
+        const positionDiv = item.querySelector('.position-number');
+        const position = index + 1;
+
+        // Update number
+        positionDiv.textContent = position;
+
+        // Remove all existing bg/text classes
+        positionDiv.classList.remove('bg-blue-500', 'bg-yellow-400', 'bg-green-500', 'bg-gray-200',
+                                      'text-white', 'text-gray-900', 'text-gray-700');
+
+        // Remove row highlighting
+        item.classList.remove('bg-blue-50', 'bg-yellow-50', 'border-l-4', 'border-blue-500');
+
+        // Update colors based on position
+        if (position === 1) {
+            positionDiv.classList.add('bg-blue-500', 'text-white');
+            item.classList.add('bg-blue-50', 'border-l-4', 'border-blue-500');
+        } else if (position === 2) {
+            positionDiv.classList.add('bg-yellow-400', 'text-gray-900');
+            item.classList.add('bg-yellow-50');
+        } else if (position === 3) {
+            positionDiv.classList.add('bg-green-500', 'text-white');
+        } else {
+            positionDiv.classList.add('bg-gray-200', 'text-gray-700');
+        }
+
+        // Update badge
+        const badgeContainer = item.querySelector('.status-badge');
+        if (badgeContainer) {
+            if (position === 1) {
+                badgeContainer.innerHTML = '<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">NEXT HOST</span>';
+            } else if (position === 2) {
+                badgeContainer.innerHTML = '<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">BACKUP</span>';
+            } else if (position === 3) {
+                badgeContainer.innerHTML = '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">IN HOLE</span>';
+            } else {
+                badgeContainer.innerHTML = '';
+            }
+        }
+
+        // Update member name crown
+        const nameEl = item.querySelector('.member-name');
+        if (nameEl) {
+            const name = nameEl.textContent.replace('👑 ', '').trim();
+            nameEl.textContent = position === 1 ? '👑 ' + name : name;
+        }
+    });
+}
+
+async function saveOrder() {
+    const items = hostingList.querySelectorAll('.hosting-item');
+    const order = Array.from(items).map(item => item.dataset.id);
+
+    saveStatus.classList.remove('hidden');
+    saveStatus.textContent = 'Saving...';
+    saveStatus.classList.remove('text-green-600', 'text-red-600');
+    saveStatus.classList.add('text-gray-500');
+
+    try {
+        const response = await fetch('{{ url_for("admin.reorder_hosting") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ order: order })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            saveStatus.textContent = '✓ Saved!';
+            saveStatus.classList.remove('text-gray-500');
+            saveStatus.classList.add('text-green-600');
+            setTimeout(() => {
+                saveStatus.classList.add('hidden');
+            }, 2000);
+        } else {
+            throw new Error(data.error || 'Save failed');
+        }
+    } catch (error) {
+        saveStatus.textContent = '✗ Error saving. Please try again.';
+        saveStatus.classList.remove('text-gray-500');
+        saveStatus.classList.add('text-red-600');
+        console.error('Save error:', error);
+    }
+}
+
+async function autoOrganize() {
+    if (!confirm('This will reset the hosting order based on actual attendance counts. Members who have attended the most lunches since hosting will be moved to the top. Continue?')) {
+        return;
+    }
+
+    saveStatus.classList.remove('hidden');
+    saveStatus.textContent = 'Reorganizing...';
+    saveStatus.classList.remove('text-green-600', 'text-red-600');
+    saveStatus.classList.add('text-gray-500');
+
+    try {
+        const response = await fetch('{{ url_for("admin.auto_organize_hosting") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            saveStatus.textContent = '✓ Reorganized! Reloading...';
+            saveStatus.classList.remove('text-gray-500');
+            saveStatus.classList.add('text-green-600');
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            throw new Error(data.error || 'Auto-organize failed');
+        }
+    } catch (error) {
+        saveStatus.textContent = '✗ Error. Please try again.';
+        saveStatus.classList.remove('text-gray-500');
+        saveStatus.classList.add('text-red-600');
+        console.error('Auto-organize error:', error);
+    }
+}
+</script>
 {% endblock %}

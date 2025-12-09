@@ -82,6 +82,7 @@ guy-lunch/
 | Rating | `rating.py` | Member ratings for locations |
 | Photo | `photo.py` | Uploaded photos |
 | PhotoTag | `photo.py` | Member tags in photos |
+| RateLimit | `rate_limit.py` | Magic link rate limiting |
 
 **Key Relationships:**
 - Lunch → Location (many-to-one)
@@ -190,8 +191,10 @@ templates/
 │   └── email_preview.html # Individual email preview
 ├── emails/                # Email templates (Brevo-compatible HTML)
 │   ├── base_email.html        # Base email layout (reference only)
-│   ├── host_confirmation.html # Thursday: Ask host to pick location
+│   ├── host_confirmation.html # Legacy: single host confirmation
+│   ├── host_reminder.html     # Thursday: 3-tier host reminders (At Bat/On Deck/In Hole)
 │   ├── secretary_reminder.html # Friday: Reservation reminder or alert
+│   ├── secretary_status.html  # Friday: Consolidated 3-host status report
 │   ├── announcement.html       # Monday: Group announcement
 │   ├── rating_request.html     # Tuesday: Post-lunch rating request
 │   └── magic_link.html        # Magic link login email
@@ -226,13 +229,18 @@ templates/
 6. "Auto-organize" clears all `queue_position` values, reverting to natural order
 
 ### Automated Email Schedule
-**Location:** `app/services/scheduler.py`
+**Location:** `app/services/email_jobs.py`
 | Day | Time | Job | Function |
 |-----|------|-----|----------|
-| Thursday | 9am | Host confirmation request | `send_host_confirmation()` |
-| Friday | 9am | Secretary reminder | `send_secretary_reminder()` |
+| Thursday | 9am | 3-tier host reminders | `send_host_reminders()` |
+| Friday | 9am | Secretary status email | `send_secretary_reminder()` |
 | Monday | 9am | Group announcement | `send_announcement()` |
 | Tuesday | 6pm | Rating requests | `send_rating_requests()` |
+
+**3-Tier Host Reminder Logic:**
+- **In the Hole** (3 weeks): First heads-up, skipped if already confirmed + location
+- **On Deck** (2 weeks): Reminder, skipped if already confirmed + location
+- **At Bat** (this week): ALWAYS sends (includes reservation details)
 
 ---
 
@@ -471,6 +479,32 @@ Photo sharing functionality disabled per member feedback. Code preserved but blu
   - Generates confirmation token if lunch doesn't have one
   - Clears `reservation_confirmed` flag to allow changes
 
+### Completed - Phase 4.10: Security & Email Improvements (December 2025)
+- [x] **Magic Link Rate Limiting**
+  - New `RateLimit` model (`app/models/rate_limit.py`)
+  - Limit: 2 magic link emails per 5 minutes per email address
+  - Protects Brevo email quota from accidental spam
+  - Shows user-friendly messages with retry countdown
+- [x] **Admin Secretary Powers**
+  - Admins now have full secretary functionality
+  - Admin hosting queue with drag-and-drop reorder
+  - Admin attendance tracking with idempotent save logic
+  - Add guest with auto-generated placeholder emails
+- [x] **Idempotent Attendance Saving**
+  - Re-saving attendance no longer double-counts members
+  - Tracks added/removed/kept members and adjusts counters appropriately
+  - Prevents data corruption from accidental re-submissions
+- [x] **Rolling 3-Tier Host Reminder System**
+  - Added `host_confirmed` field to Lunch model
+  - Three reminder tiers sent on Thursdays:
+    - **In the Hole** (3 weeks out) - First heads-up, green themed
+    - **On Deck** (2 weeks out) - Yellow themed, skipped if already confirmed
+    - **At Bat** (this week) - Red/urgent, ALWAYS sends
+  - Friday secretary status email with all 3 hosts
+  - Secretary dashboard 3-host status tracker
+  - Smart skip logic to avoid redundant emails
+  - New email templates: `host_reminder.html`, `secretary_status.html`
+
 ### Deferred (Not Planned)
 - Push notifications (requires service worker, server-side subscription management)
 - Offline capability (requires service worker, caching strategy)
@@ -496,4 +530,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 2025 - Phase 4.9 Complete (Secretary Location Management)*
+*Last Updated: December 2025 - Phase 4.10 Complete (Security & Email Improvements)*

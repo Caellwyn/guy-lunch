@@ -103,19 +103,24 @@ PLAN → CODE → TEST → DOCUMENT → COMMIT
 - ✅ One-click rating from email (star links)
 - ✅ Location management dashboard
 
-**Phase 4 - Member Portal** 🚧 IN PROGRESS
+**Phase 4 - Member Portal** ✅ COMPLETE
 - ✅ Magic link authentication (email login, 30-day sessions)
 - ✅ Member dashboard with baseball-themed hosting lineup
-  - At Bat, On Deck, In the Hole, Dugout positions
-  - Estimated hosting dates
-  - Attendance history
 - ✅ Full batting order page (`/member/lineup`)
-- ✅ Photo gallery placeholder (`/member/gallery`)
+- ✅ Stadium theme with custom CSS and fonts
+- ✅ PWA support (Add to Home Screen)
+- ✅ Member profiles with photos
+- ✅ Secretary portal with role separation
 
-**NEXT TODO: Make the portal look WAY cooler!**
-- Real baseball imagery and backgrounds
-- Custom graphics for lineup positions
-- Fun, impressive styling to wow the members
+**Phase 4.10 - Security & Email Improvements** ✅ COMPLETE
+- ✅ Magic link rate limiting (2 per 5 min per email)
+- ✅ Idempotent attendance saving (no double-counting)
+- ✅ Admin has full secretary powers
+- ✅ Rolling 3-tier host reminder system:
+  - Thursday: In Hole (3wks), On Deck (2wks), At Bat (this week)
+  - Friday: Secretary consolidated status email
+  - Dashboard: 3-host status tracker
+- ⏳ Railway cron jobs (pending historical data import)
 
 See `Tuesday_Lunch_Scheduler_Project_Plan.md` for full progress tracking.
 

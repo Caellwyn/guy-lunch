@@ -44,10 +44,42 @@ def get_next_tuesday():
     return today + timedelta(days=days_until_tuesday)
 
 
+def get_upcoming_host_statuses():
+    """Get status of the next 3 hosts (At Bat, On Deck, In the Hole)."""
+    from app.services.email_jobs import get_hosting_queue, get_upcoming_tuesdays
+
+    tuesdays = get_upcoming_tuesdays()
+    queue = get_hosting_queue(limit=3)
+
+    statuses = []
+    tiers = [
+        ('at_bat', 'At Bat', tuesdays['at_bat']),
+        ('on_deck', 'On Deck', tuesdays['on_deck']),
+        ('in_hole', 'In the Hole', tuesdays['in_hole']),
+    ]
+
+    for i, (tier_key, tier_label, lunch_date) in enumerate(tiers):
+        host = queue[i] if i < len(queue) else None
+        lunch = Lunch.query.filter_by(date=lunch_date).first()
+        location = Location.query.get(lunch.location_id) if lunch and lunch.location_id else None
+
+        statuses.append({
+            'tier': tier_key,
+            'tier_label': tier_label,
+            'lunch_date': lunch_date,
+            'host': host,
+            'host_confirmed': lunch.host_confirmed if lunch else False,
+            'location': location,
+            'location_selected': lunch.location_id is not None if lunch else False,
+        })
+
+    return statuses
+
+
 @secretary_bp.route('/')
 @secretary_required
 def dashboard():
-    """Secretary dashboard - simple overview."""
+    """Secretary dashboard - simple overview with 3-host status tracker."""
     next_tuesday = get_next_tuesday()
 
     # Get or create this week's lunch
@@ -59,12 +91,16 @@ def dashboard():
     last_tuesday = next_tuesday - timedelta(days=7)
     last_lunch = Lunch.query.filter_by(date=last_tuesday).first()
 
+    # Get 3-host status tracker
+    host_statuses = get_upcoming_host_statuses()
+
     return render_template('secretary/dashboard.html',
                            next_tuesday=next_tuesday,
                            lunch=lunch,
                            location=location,
                            host=host,
-                           last_lunch=last_lunch)
+                           last_lunch=last_lunch,
+                           host_statuses=host_statuses)
 
 
 @secretary_bp.route('/attendance')
@@ -116,7 +152,13 @@ def attendance():
 @secretary_bp.route('/attendance', methods=['POST'])
 @secretary_required
 def save_attendance():
-    """Save attendance for a lunch."""
+    """Save attendance for a lunch.
+
+    Handles re-saving attendance correctly by:
+    - Only incrementing counters for newly added attendees
+    - Decrementing counters for removed attendees
+    - Properly handling host changes
+    """
     lunch_date_str = request.form.get('lunch_date')
     lunch_date = date.fromisoformat(lunch_date_str) if lunch_date_str else get_next_tuesday()
 
@@ -125,18 +167,41 @@ def save_attendance():
         flash('Lunch not found.', 'error')
         return redirect(url_for('secretary.attendance'))
 
-    # Get list of member IDs who attended
-    attendee_ids = request.form.getlist('attendees')
-    host_id = request.form.get('host_id')
+    # Get list of member IDs who attended (as integers)
+    new_attendee_ids = set(int(mid) for mid in request.form.getlist('attendees'))
+    new_host_id = int(request.form.get('host_id')) if request.form.get('host_id') else None
 
-    # Clear existing attendance for this lunch
+    # Get existing attendance records BEFORE clearing
+    existing_records = {a.member_id: a for a in Attendance.query.filter_by(lunch_id=lunch.id).all()}
+    existing_attendee_ids = set(existing_records.keys())
+    previous_host_id = lunch.host_id
+
+    # Calculate who was added and who was removed
+    added_ids = new_attendee_ids - existing_attendee_ids
+    removed_ids = existing_attendee_ids - new_attendee_ids
+    kept_ids = new_attendee_ids & existing_attendee_ids
+
+    # Handle removed members - decrement their counters
+    for member_id in removed_ids:
+        member = db.session.get(Member, member_id)
+        if member:
+            was_host = existing_records[member_id].was_host
+            if was_host:
+                # They were host but are now removed - decrement hosting count
+                member.total_hosting_count = max(0, (member.total_hosting_count or 1) - 1)
+                # Don't change last_hosted_date - leave historical record
+            else:
+                # They were a regular attendee - decrement attendance counter
+                member.attendance_since_hosting = max(0, (member.attendance_since_hosting or 1) - 1)
+
+    # Clear existing attendance records
     Attendance.query.filter_by(lunch_id=lunch.id).delete()
 
-    # Record attendance
-    for member_id in attendee_ids:
-        member = Member.query.get(int(member_id))
+    # Record new attendance
+    for member_id in new_attendee_ids:
+        member = db.session.get(Member, member_id)
         if member:
-            was_host = (str(member_id) == str(host_id))
+            was_host = (member_id == new_host_id)
             attendance_record = Attendance(
                 lunch_id=lunch.id,
                 member_id=member.id,
@@ -144,21 +209,34 @@ def save_attendance():
             )
             db.session.add(attendance_record)
 
-            # Update member's attendance counter
-            if was_host:
-                member.attendance_since_hosting = 0
-                member.last_hosted_date = lunch_date
-                member.total_hosting_count = (member.total_hosting_count or 0) + 1
-            else:
-                member.attendance_since_hosting = (member.attendance_since_hosting or 0) + 1
+            # Only update counters for NEWLY ADDED members
+            if member_id in added_ids:
+                if was_host:
+                    member.attendance_since_hosting = 0
+                    member.last_hosted_date = lunch_date
+                    member.total_hosting_count = (member.total_hosting_count or 0) + 1
+                else:
+                    member.attendance_since_hosting = (member.attendance_since_hosting or 0) + 1
+            # For kept members, handle host status changes
+            elif member_id in kept_ids:
+                was_previously_host = existing_records[member_id].was_host
+                if was_host and not was_previously_host:
+                    # Became host - reset counter and increment hosting count
+                    member.attendance_since_hosting = 0
+                    member.last_hosted_date = lunch_date
+                    member.total_hosting_count = (member.total_hosting_count or 0) + 1
+                elif not was_host and was_previously_host:
+                    # Was host, now isn't - decrement hosting count, add attendance
+                    member.total_hosting_count = max(0, (member.total_hosting_count or 1) - 1)
+                    member.attendance_since_hosting = (member.attendance_since_hosting or 0) + 1
 
     # Update lunch record
-    lunch.actual_attendance = len(attendee_ids)
-    lunch.host_id = int(host_id) if host_id else None
+    lunch.actual_attendance = len(new_attendee_ids)
+    lunch.host_id = new_host_id
     lunch.status = 'completed'
 
     db.session.commit()
-    flash(f'Attendance saved! {len(attendee_ids)} members attended.', 'success')
+    flash(f'Attendance saved! {len(new_attendee_ids)} members attended.', 'success')
     return redirect(url_for('secretary.dashboard'))
 
 
@@ -167,6 +245,7 @@ def save_attendance():
 def add_guest():
     """Quick add a guest during attendance tracking."""
     from flask import jsonify
+    import uuid
 
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
@@ -174,9 +253,19 @@ def add_guest():
     if not name:
         return jsonify({'error': 'Name is required'}), 400
 
+    # Email is required by database constraint - generate placeholder if not provided
+    if not email:
+        # Generate a unique placeholder email for guests without email
+        email = f"guest-{uuid.uuid4().hex[:8]}@placeholder.local"
+
+    # Check if email already exists
+    existing = Member.query.filter_by(email=email).first()
+    if existing:
+        return jsonify({'error': 'A member with this email already exists'}), 400
+
     member = Member(
         name=name,
-        email=email or None,
+        email=email,
         member_type='guest',
         attendance_since_hosting=0,
         first_attended=date.today()
