@@ -249,6 +249,37 @@ def auto_organize_hosting():
     return jsonify({'success': True, 'message': 'Hosting order reset to default (by attendance count)'})
 
 
+@secretary_bp.route('/change-location')
+@secretary_required
+def change_location():
+    """Redirect secretary to the host confirmation page to change location.
+
+    Reuses the existing host confirmation flow which has Google Places
+    integration and all the location selection UI.
+    """
+    import secrets
+
+    next_tuesday = get_next_tuesday()
+
+    # Get or create this week's lunch
+    lunch = Lunch.query.filter_by(date=next_tuesday).first()
+    if not lunch:
+        lunch = Lunch(date=next_tuesday, status='planned')
+        db.session.add(lunch)
+
+    # Ensure the lunch has a confirmation token (generate if missing)
+    if not lunch.confirmation_token:
+        lunch.confirmation_token = secrets.token_urlsafe(32)
+
+    # Clear reservation_confirmed so the page allows changes
+    lunch.reservation_confirmed = False
+
+    db.session.commit()
+
+    # Redirect to the existing host confirmation page
+    return redirect(url_for('main.confirm_host', token=lunch.confirmation_token))
+
+
 @secretary_bp.route('/transfer', methods=['GET', 'POST'])
 @secretary_required
 def transfer_role():

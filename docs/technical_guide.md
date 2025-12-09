@@ -154,6 +154,7 @@ guy-lunch/
 - `/secretary/hosting-order` - Drag-and-drop hosting queue management
 - `/secretary/hosting-order/reorder` - Save new order (AJAX)
 - `/secretary/hosting-order/auto-organize` - Reset to default order (AJAX)
+- `/secretary/change-location` - Change lunch location (redirects to host confirmation page)
 - `/secretary/transfer` - Transfer secretary role to another member
 
 ### Services Layer
@@ -461,6 +462,15 @@ Photo sharing functionality disabled per member feedback. Code preserved but blu
   - Consistent branding across iOS, Android, and browser
   - Android splash now matches iOS (same background image)
 
+### Completed - Phase 4.9: Secretary Location Management (December 2025)
+- [x] **Secretary can change/set lunch location**
+  - "Change Location" link on secretary dashboard (when location is confirmed)
+  - "Set Location Now" button (when no location set yet)
+  - New route `/secretary/change-location` redirects to host confirmation page
+  - Reuses existing host confirmation flow with Google Places integration
+  - Generates confirmation token if lunch doesn't have one
+  - Clears `reservation_confirmed` flag to allow changes
+
 ### Deferred (Not Planned)
 - Push notifications (requires service worker, server-side subscription management)
 - Offline capability (requires service worker, caching strategy)
@@ -486,4 +496,4 @@ flask --app run:app db downgrade
 
 ---
 
-*Last Updated: December 2025 - Phase 4.8 Complete (PWA Polish & UX Improvements)*
+*Last Updated: December 2025 - Phase 4.9 Complete (Secretary Location Management)*
